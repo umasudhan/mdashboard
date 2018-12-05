@@ -44,7 +44,7 @@ ev.setMaxListeners(0);
 // default manifest.json to be returned as required.
 var mani = {
     "name": "Node-RED Dashboard",
-    "short_name": "Dashboard",
+    "short_name": "mDashboard",
     "description": "A dashboard for Node-RED",
     "start_url": "./#/0",
     "background_color": "#910000",
