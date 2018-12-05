@@ -1,5 +1,3 @@
-var lineColours = [];
-var barColours = [];
 
 /* global angular */
 angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
@@ -42,6 +40,9 @@ angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
                         }
                     });
 
+                    // Override the default "miter" linejoin setting
+                    Chart.defaults.global.elements.line.borderJoinStyle = "round";
+
                     Chart.plugins.register({
                         beforeDatasetsDraw: function(chartInstance) {
                             var ctx = chartInstance.chart.ctx;
@@ -53,7 +54,7 @@ angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
                         },
                         afterDatasetsDraw: function(chartInstance) {
                             chartInstance.chart.ctx.restore();
-                        },
+                        }
                     });
 
                     // When new values arrive, update the chart
@@ -107,12 +108,12 @@ angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
                                 }
                                 if ((type === "bar") || (type === "horizontalBar")) {
                                     if ((newValue.values.series.length > 1) || useOneColor) {
-                                        scope.config.colours = lineColours;
+                                        scope.config.colours = scope.lineColours;
                                     }
-                                    else { scope.config.colours = barColours; }
+                                    else { scope.config.colours = scope.barColours; }
                                 }
                                 if (type === "pie") {
-                                    scope.config.colours = barColours;
+                                    scope.config.colours = scope.barColours;
                                 }
                                 scope.config.data = newValue.values.data;
                                 scope.config.series = newValue.values.series;
@@ -126,6 +127,9 @@ angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
                         }
                     });
                 }, 0);
+                $timeout(function() {
+                    scope.$broadcast("$resize");
+                }, 100);
             }
         }
     }
@@ -163,14 +167,14 @@ function loadConfiguration(type,scope) {
 
     //Build colours array
     config.colours = config.colours || baseColours;
-    barColours = [];
-    lineColours = [];
+    scope.barColours = [];
+    scope.lineColours = [];
     baseColours.forEach(function(colour, index) {
-        lineColours.push({
+        scope.lineColours.push({
             backgroundColor: colour,
             borderColor: colour
         });
-        barColours.push({
+        scope.barColours.push({
             backgroundColor: baseColours,
             borderColor: "#888",
             borderWidth: 1
@@ -261,12 +265,30 @@ function loadConfiguration(type,scope) {
     }
     else if ((type === 'bar') || (type === 'horizontalBar')) {
         config.options.scales.xAxes = [{}];
-        if (isNaN(yMin)) { yMin = 0; }
     }
     else if (type === "radar") {
-        config.options.scale = {ticks:{}};
+        config.options = {
+            scale: {
+                ticks: {
+                    beginAtZero: true,
+                    showLabelBackdrop: false
+                }
+            }
+        };
         if (!isNaN(yMin)) { config.options.scale.ticks.min = yMin; }
         if (!isNaN(yMax)) { config.options.scale.ticks.max = yMax; }
+        if (themeState) {
+            var tc = themeState['widget-textColor'].value;
+            var gc = tinycolor(tc).toRgb();
+            var gl = "rgba("+gc.r+","+gc.g+","+gc.b+",0.1)";
+            var gl2 = "rgba("+gc.r+","+gc.g+","+gc.b+",0.3)";
+            var gl3 = "rgba("+gc.r+","+gc.g+","+gc.b+",0.6)";
+            config.options.scale.ticks.fontColor= gl3; // labels such as 10, 20, etc
+            config.options.scale.ticks.fontSize = 8;
+            config.options.scale.pointLabels = { fontColor: tc, fontSize: 14 }; // labels around the edge like 'Running'
+            config.options.scale.gridLines = { color: gl };
+            config.options.scale.angleLines = { color: gl2 }; // lines radiating from the center
+        }
     }
 
     // Configure scales
@@ -320,7 +342,8 @@ function loadConfiguration(type,scope) {
     }
 
     // Configure legend
-    if (type !== 'bar' && type !== 'horizontalBar' && JSON.parse(legend)) {
+    //if (type !== 'bar' && type !== 'horizontalBar' && JSON.parse(legend)) {
+    if (JSON.parse(legend)) {
         config.options.legend = {
             display:true,
             position:'top',
@@ -335,6 +358,5 @@ function loadConfiguration(type,scope) {
             config.options.legend.labels.fontColor = themeState['m-widget-textColor'].value;
         }
     }
-
     return config;
 }

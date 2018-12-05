@@ -1,4 +1,4 @@
-# mdashboard
+# node-red-contrib-mdashboard
 
 
 [![npm version](https://badge.fury.io/js/node-red-contrib-mdashboard.svg)](https://badge.fury.io/js/node-red-contrib-mdashboard)
@@ -14,15 +14,19 @@ In that sense, this dashboard is multi-user only for input- all dashboard users 
 Most of the documentation is left as is from the original project as it is applicable to the current project as well.
 
 This module provides a set of nodes in Node-RED to quickly create a live data
-dashboard. 
-           
-For the latest updates see the [CHANGELOG.md](https://github.com/umasudhan/node-red-contrib-mdashboard/blob/master/CHANGELOG.md)
+dashboard.
+
+From version 0.1.17 you can create and install widget nodes like other Node-RED nodes.
+See the <a href="https://github.com/node-red/node-red-dashboard/wiki/Creating-New-Dashboard-Widgets">Wiki</a>
+for more information.
+
+For the latest updates see the [CHANGELOG.md](https://github.com/node-red/node-red-dashboard/blob/master/CHANGELOG.md)
 
 <img src="http://nodered.org/images/dashboarde.png"/>
 
 ## Pre-requisites
 
-mDashboard requires Node-RED version 0.14 or more recent.
+Node-RED-Dashboard requires Node-RED version 0.14 or more recent.
 
 ## Install
 
@@ -30,6 +34,10 @@ To install the stable version use the `Menu - Manage palette` option and search 
 
 Open your Node-RED instance and you should have UI nodes available in the palette and a new `mdashboard` tab in the
 right side panel. The UI interface is available at <http://localhost:1880/mui> (if the default settings are used).
+
+## Settings
+
+The default url for the dashboard is based off your existing Node-RED httpRoot path with /ui added. This can be changed in your Node-RED settings.js file - `mui: { path: "mui" },`
 
 ## Layout
 
@@ -59,17 +67,22 @@ The widget layout is managed by a `mdashboard` tab in the sidebar of the Node-RE
 
  - **Links** - to other web pages can also be added to the menu. They can optionally be opened in an iframe - if allowed by the target page.
 
-##### Theme
-
- - **Style** - the theme and font of the UI is set in the dashboard sidebar. You can select a default Light, Dark or Custom Theme. You cannot have different themes for each tab.
-
 ##### Site
 
  - **Title** - the `title` of the UI page can be set.
 
- - **Options** - optionally hide the title bar, and allow swiping sideways between tabs on a touch screen.
+ - **Options** - optionally hide the title bar, and allow swiping sideways between tabs on a touch screen. You can also set whether the template uses the selected theme or uses the underlying Angular Material theme. You can also choose to use the Angular Material theme everywhere.
+
+ - **Date Format** - sets the default date format for chart and other labels.
 
  - **Sizes** - sets the basic geometry of the grid layout in pixels. The **width** and **height** of widgets can be set, as can the width of *groups*. These are the basic definitions of the "units' used elsewhere within the dashboard.
+
+##### Theme
+
+  - **Style** - the theme and font of the UI is set in the dashboard sidebar. You can select a default Light, Dark or Custom Theme. You cannot have different themes for each tab.
+
+You can also choose to use the basic Angular Material themes instead if you like, either just within any ui_templates or for the whole Dashboard. This will only affect angular components so some of the charts and so on may need extra work.
+
 
 #### Widgets
 
@@ -77,12 +90,12 @@ Group labels are optional.
 
 Most widgets can have a label and value - both of these can be specified by properties of the incoming msg if required, and modified by angular filters. For example the label can be set to `{{msg.topic}}`, or the value could be set to `{{value | number:1}}%` to round the value to one decimal place and append a % sign.
 
-Each node may parse the `msg.payload` to make it suitable for display. This converted version is exposed as the variable called `value`, (see example above).
+Each node may parse the `msg.payload` to make it suitable for display. This converted version is exposed as the variable called `value`, (see example above).  
 
 Any widget can be disabled by passing in a `msg.enabled` property set to `false;`. *Note:* this doesn't stop the widget receiving messages but does stop inputs being active and does re-style the widget.
 
-Most ui widgets can also be configured by using a `msg.ui_control` message - see **[config-fields.md](https://github.com/umasudhan/node-red-contrib-mdashboard/blob/master/config-fields.md)**
-for further details.
+Most ui widgets can also be configured by using a `msg.ui_control` message - see **[config-fields.md](https://github.com/node-red/node-red-dashboard/blob/master/config-fields.md)**
+for futher details.
 
   - **Audio out** - a widget that will let you play audio (wav or mp3) or send Text to Speech (TTS) to the client.
   - **Button** - the icon can be set using either Material or fa-icons - the colour and background colour may also be set. If the widget is sized to 1 wide the icon has precedence.
@@ -103,13 +116,22 @@ for further details.
   - **Template** - the template node allows the user to specify and create their own widgets within the framework using HTML, Javascript. This is an Angular.js widget. You may also use this to override the built in CSS styles.
   - **Text** - A read only widget, the layout of the `label`, and `value` can be configured.
   - **Text input** - text input box, with optional label, can also support password, email and colour modes.
-  - **UI-Control** - allows some dynamic control of the dashboard. Sending a `msg.payload` of the tab number (from 0) or name will switch to that tab. Outputs a `msg.payload` for every browser *connection* and *loss*, that can be used to trigger other actions.
+  - **UI-Control** - allows some dynamic control of the dashboard. Sending a `msg.payload` of the tab number (from 0) or tab_name will switch to that tab. Groups can be hidden and made visible via a msg like `{group:{hide:["tab_name_group_name_with_underscores"],show:["tab_name_another_group"],focus:true}}`. Outputs a `msg.payload` for every browser *connection* and *loss*, that can be used to trigger other actions.
 
 **Tip:** The *Text* widget will accept html - so you can use it together with the *fa-icons* we
 already use to create indicator type widgets.
 
+## Securing the Dashboard
+
+You can use the `httpNodeAuth` property in your Node-RED settings.js file to secure the Dashboard as it is
+created the same way as other HTTP nodes are. The details can be found at the bottom of this page in the
+docs <http://nodered.org/docs/security>
 
 ## Multiple Users
 
 This Dashboard supports multiple individual users- see note at top. If a widget state on a dashboard changes, the event is emitted only to the dashboard from which it originated.
+
+Messages coming from the dashboard **do** have a `msg.socketid`, and updates like change of tab,
+notifications, and audio alerts will be directed only to that session. Delete the `msg.sessionid` to send
+to all sessions.
 

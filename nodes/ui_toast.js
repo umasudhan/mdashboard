@@ -18,6 +18,8 @@ module.exports = function(RED) {
         var node = this;
 
         var noscript = function (content) {
+            if (typeof content === "object") { return null; }
+            content = '' + content;
             content = content.replace(/<.*cript.*\/scrip.*>/ig, '');
             content = content.replace(/ on\w+=".*"/g, '');
             content = content.replace(/ on\w+=\'.*\'/g, '');

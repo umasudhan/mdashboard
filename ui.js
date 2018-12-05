@@ -215,14 +215,16 @@ function add(opt) {
                             if (b.indexOf("[") !== -1) { b = b.split("[")[0]; }
                             if (!toEmit.hasOwnProperty("msg")) { toEmit.msg = {}; }
                             if (!toEmit.msg.hasOwnProperty(b) && msg.hasOwnProperty(b)) {
-                                toEmit.msg[b] = JSON.parse(JSON.stringify(msg[b]));
+                                if (Buffer.isBuffer(msg[b])) { toEmit.msg[b] = msg[b].toString("binary"); }
+                                else { toEmit.msg[b] = JSON.parse(JSON.stringify(msg[b])); }
                             }
                         }
                         else {
                             if (b.indexOf(".") !== -1) { b = b.split(".")[0]; }
                             if (b.indexOf("[") !== -1) { b = b.split("[")[0]; }
                             if (!toEmit.hasOwnProperty(b) && msg.hasOwnProperty(b)) {
-                                toEmit[b] = JSON.parse(JSON.stringify(msg[b]));
+                                if (Buffer.isBuffer(msg[b])) { toEmit.msg[b] = msg[b].toString("binary"); }
+                                else { toEmit.msg[b] = JSON.parse(JSON.stringify(msg[b])); }
                             }
                         }
                     }
@@ -233,6 +235,7 @@ function add(opt) {
             addField("label");
             addField("format");
             addField("color");
+            addField("units");
             if (msg.hasOwnProperty("enabled")) { toEmit.disabled = !msg.enabled; }
             toEmit.id = toStore.id = opt.node.id;
             toEmit.socketid = msg.socketid;
@@ -261,16 +264,21 @@ function add(opt) {
     // This is the handler for messages coming back from the UI
     var handler = function (msg) {
         if (msg.id !== opt.node.id) { return; }  // ignore if not us
-        var converted = opt.convertBack(msg.value);
-        if (opt.storeFrontEndInputAsState) {
-            currentValues[msg.id] = converted;
-            replayMessages[msg.id] = msg;
-        }
-        var toSend = {payload:converted};
-        toSend = opt.beforeSend(toSend, msg) || toSend;
-        toSend.socketid = toSend.socketid || msg.socketid;
-        if (!msg.hasOwnProperty("_fromInput")) {   // TODO: too specific
-            opt.node.send(toSend);      // send to following nodes
+        if (settings.readOnly === true) {
+            msg.value = currentValues[msg.id];
+        } // don't accept input if we are in read only mode
+        else {
+            var converted = opt.convertBack(msg.value);
+            if (opt.storeFrontEndInputAsState) {
+                currentValues[msg.id] = converted;
+                replayMessages[msg.id] = msg;
+            }
+            var toSend = {payload:converted};
+            toSend = opt.beforeSend(toSend, msg) || toSend;
+            toSend.socketid = toSend.socketid || msg.socketid;
+            if (!msg.hasOwnProperty("_fromInput")) {   // TODO: too specific
+                opt.node.send(toSend);      // send to following nodes
+            }
         }
         if (opt.storeFrontEndInputAsState) {
             //fwd to all UI clients
@@ -303,6 +311,10 @@ function init(server, app, log, redSettings) {
         settings.path = uiSettings.path;
     }
     else { settings.path = 'mui'; }
+    if ((uiSettings.hasOwnProperty("readOnly")) && (typeof uiSettings.readOnly === "boolean")) {
+        settings.readOnly = uiSettings.readOnly;
+    }
+    else { settings.readOnly = false; }
     settings.defaultGroupHeader = uiSettings.defaultGroup || 'Default';
     settings.verbose = redSettings.verbose || false;
 
@@ -313,11 +325,11 @@ function init(server, app, log, redSettings) {
 
     fs.stat(path.join(__dirname, 'dist/index.html'), function(err, stat) {
         if (!err) {
-            app.use( join(settings.path,"manifest.json"), function(req, res) { res.send(mani); });
+            app.use( join(settings.path, "manifest.json"), function(req, res) { res.send(mani); });
             app.use( join(settings.path), serveStatic(path.join(__dirname, "dist")) );
         }
         else {
-            log.info("Dashboard using development folder");
+            log.info("[Dashboard] Dashboard using development folder");
             app.use(join(settings.path), serveStatic(path.join(__dirname, "src")));
             var vendor_packages = [
                 'angular', 'angular-sanitize', 'angular-animate', 'angular-aria', 'angular-material', 'angular-touch',
@@ -352,7 +364,7 @@ function init(server, app, log, redSettings) {
         });
         socket.on('ui-change', function(index) {
             var name = "";
-            if ((index != null) && !isNaN(index) && (menu.length > 0) && (index <= menu.length)) {
+            if ((index != null) && !isNaN(index) && (menu.length > 0) && (index < menu.length) && menu[index]) {
                 name = (menu[index].hasOwnProperty("header") && typeof menu[index].header !== 'undefined') ? menu[index].header : menu[index].name;
                 ev.emit("changetab", index, name, socket.client.id, socket.request.connection.remoteAddress);
             }
@@ -362,6 +374,9 @@ function init(server, app, log, redSettings) {
         });
         socket.on('disconnect', function() {
             ev.emit("endsocket", socket.client.id, socket.request.connection.remoteAddress);
+        });
+        socket.on('ui-audio', function(audioStatus) {
+            ev.emit("audiostatus", audioStatus, socket.client.id, socket.request.connection.remoteAddress);
         });
     });
 }

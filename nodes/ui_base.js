@@ -1,9 +1,12 @@
 module.exports = function(RED) {
     var ui = require('../ui')(RED);
     var path= require('path');
+    var node;
+    var set = RED.settings.mui || "{}";
 
     function BaseNode(config) {
         RED.nodes.createNode(this, config);
+        node = this;
         var baseFontName = "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
 
         var defaultLightTheme = {
@@ -19,6 +22,12 @@ module.exports = function(RED) {
             baseColor: defaultLightTheme.baseColor,
             baseFont: baseFontName
         }
+        var defaultAngularTheme = {
+            primary:'indigo',
+            accents:'teal',
+            warn: "red",
+            background:'grey'
+        };
 
         // Setup theme name
         // First try old format (for upgrading with old flow file)
@@ -60,6 +69,7 @@ module.exports = function(RED) {
             lightTheme: config.theme.lightTheme || defaultLightTheme,
             darkTheme: config.theme.darkTheme || defaultDarkTheme,
             customTheme: config.theme.customTheme || defaultCustomTheme,
+            angularTheme: config.theme.angularTheme || defaultAngularTheme,
             themeState: config.theme.themeState || defaultThemeState
         }
 
@@ -74,12 +84,13 @@ module.exports = function(RED) {
     RED.library.register("themes");
 
     RED.httpAdmin.get('/uisettings', function(req, res) {
-        var ret = RED.settings.mui || "{}";
-        res.json(ret);
+        res.json(set);
     });
 
     RED.httpAdmin.get('/ui_base/js/*', function(req, res) {
         var filename = path.join(__dirname , '../dist/js', req.params[0]);
-        res.sendFile(filename);
+        res.sendFile(filename, function (err) {
+            if (err) { node.warn(filename + " not found. Maybe running in dev mode."); }
+        });
     });
 };

@@ -5,6 +5,7 @@
         defaults: {
             name: {value: ''},
             label: {value: 'switch'},
+            tooltip: {value: ''},
             group: {type: 'mui_group', required: true},
             order: {value: 0},
             width: {value: 0, validate: function(v) {
@@ -45,33 +46,36 @@
                 var v = $(this).val();
                 if (v === "default") {
                     $(".form-row-custom-icons").hide();
-                } else {
+                }
+                else {
                     $(".form-row-custom-icons").show();
                 }
             });
 
             if (this.onicon !== "" || this.oncolor !== "" || this.officon !=="" || this.offcolor !== "") {
                 $('#node-input-custom-icons').val('custom');
-            } else {
+            }
+            else {
                 $('#node-input-custom-icons').change();
             }
 
             $('#node-input-onvalue').typedInput({
                 default: 'str',
                 typeField: $("#node-input-onvalueType"),
-                types: ['flow','global','str','num','bool','json','date']
+                types: ['str','num','bool','json','bin','date']
             });
             $('#node-input-offvalue').typedInput({
                 default: 'str',
                 typeField: $("#node-input-offvalueType"),
-                types: ['flow','global','str','num','bool','json','date']
+                types: ['str','num','bool','json','bin','date']
             });
 
             $('#node-input-passthru').change(function() {
                 if (this.checked) {
                     $('.form-row-decouple').hide();
                     $('#node-input-decouple').val("false");
-                } else {
+                }
+                else {
                     $('.form-row-decouple').show();
                 }
             });
@@ -88,7 +92,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="mui_switch">
+<script type="text/x-red" data-template-name="ui_switch">
 	<div class="form-row">
         <label for="node-input-group"><i class="fa fa-table"></i> Group</label>
         <input type="text" id="node-input-group">
@@ -102,6 +106,10 @@
     <div class="form-row">
         <label for="node-input-label"><i class="fa fa-i-cursor"></i> Label</label>
         <input type="text" id="node-input-label">
+    </div>
+    <div class="form-row">
+        <label for="node-input-tooltip"><i class="fa fa-info-circle"></i> Tooltip</label>
+        <input type="text" id="node-input-tooltip" placeholder="optional tooltip">
     </div>
     <div class="form-row">
         <label for="node-input-custom-icons"><i class="fa fa-picture-o"></i> Icon</label>

@@ -22,11 +22,13 @@ module.exports = function(RED) {
             control: {
                 type: 'slider',
                 label: config.label,
+                tooltip: config.tooltip,
                 order: config.order,
                 value: config.min,
                 min: config.min,
                 max: config.max,
                 step: config.step || 1,
+                outs: config.outs || "all",
                 width: config.width || group.config.width || 6,
                 height: config.height || 1
             },

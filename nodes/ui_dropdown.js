@@ -16,6 +16,7 @@ module.exports = function(RED) {
         var control = {
                 type: 'dropdown',
                 label: config.label,
+                tooltip: config.tooltip,
                 place: config.place || "Select option",
                 order: config.order,
                 value: config.payload || node.id,
@@ -96,7 +97,8 @@ module.exports = function(RED) {
                 if (emitOptions.isOptionsValid) {
                     control.options = emitOptions.newOptions;
                     control.value = emitOptions.value;
-                } else {
+                }
+                else {
                     if (msg.options) {
                         node.error("ERR: Invalid Options", msg);
                     }

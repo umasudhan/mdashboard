@@ -12,8 +12,15 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
             me.item.getLabel = $interpolate(me.item.label).bind(null, me.item);
         }
 
+        if (typeof me.item.tooltip === "string") {
+            me.item.getTooltip = $interpolate(me.item.tooltip).bind(null, me.item);
+        }
         if (typeof me.item.color === "string") {
             me.item.getColor = $interpolate(me.item.color).bind(null, me.item);
+        }
+
+        if (typeof me.item.units === "string") {
+            me.item.getUnits = $interpolate(me.item.units).bind(null, me.item);
         }
 
         me.init = function () {
@@ -49,6 +56,8 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
 
                 case 'numeric': {
                     var changeValue = function (delta) {
+                        me.item.value = parseFloat(me.item.value);
+                        if (isNaN(me.item.value)) { me.item.value = me.item.min; }
                         if (delta > 0) {
                             if (me.item.value < me.item.max) {
                                 me.item.value = Math.round(Math.min(me.item.value + delta, me.item.max)*10000)/10000;
@@ -67,12 +76,19 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                         }
                     };
 
-                    var regex = /({{([^}}]+)}})/ig
-                    var fl = me.item.format.replace(regex, "").length * 9.5;
+                    //var regex = /({{([^}}]+)}})/ig
+                    //var fl = me.item.format.replace(regex, "").length * 9.5;
                     var mnw = (me.item.min + me.item.step).toString().length * 9.5;
                     var mxw = (me.item.max + me.item.step).toString().length * 9.5;
-                    me.item.minWidth = (mnw > mxw ? mnw : mxw) + fl;
+                    me.item.minWidth = (mnw > mxw ? mnw : mxw); //+ fl;
                     var promise = null;
+                    me.newValue = function() {
+                        //me.item.value = parseFloat(me.item.value);
+                        if (isNaN(parseFloat(me.item.value))) { return; }
+                        if (me.item.value < me.item.min) { me.item.value = me.item.min; }
+                        if (me.item.value > me.item.max) { me.item.value = me.item.max; }
+                        events.emit({ id:me.item.id, value:me.item.value });
+                    }
                     me.periodicChange = function (delta) {
                         changeValue(delta);
                         var i = 0;
@@ -115,6 +131,7 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                     me.item.options = {
                         format: me.item.format,
                         inline: me.item.showPicker,
+                        hue: me.item.showHue,
                         alpha: me.item.showAlpha,
                         lightness: me.item.showLightness,
                         swatch: me.item.showSwatch,
@@ -258,7 +275,7 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
 
         // will emit me.item.value when enter is pressed
         me.keyPressed = function (event) {
-            if ((event.charCode === 13) || (event.which === 13) || (event.which === 9) || (event.which === 9)) {
+            if ((event.charCode === 13) || (event.which === 13) || (event.which === 9)) {
                 events.emit({ id:me.item.id, value:me.item.value });
             }
         }

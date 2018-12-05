@@ -1,18 +1,45 @@
 
+// Object.assign polyfill for IE11....
+if (typeof Object.assign != 'function') {
+    (function() {
+        Object.assign = function(target) {
+            'use strict';
+            if (target === undefined || target === null) {
+                throw new TypeError('Cannot convert undefined or null to object');
+            }
+            var output = Object(target);
+            for (var index = 1; index < arguments.length; index++) {
+                var source = arguments[index];
+                if (source !== undefined && source !== null) {
+                    for (var nextKey in source) {
+                        if (source.hasOwnProperty(nextKey)) {
+                            output[nextKey] = source[nextKey];
+                        }
+                    }
+                }
+            }
+            return output;
+        };
+    })()
+}
+
 var app = angular.module('ui',['ngMaterial', 'ngMdIcons', 'ngSanitize', 'ngTouch', 'sprintf', 'chart.js', 'color.picker']);
 
 var locale = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.language;
 moment.locale(locale);
 
-app.config(['$mdThemingProvider', '$compileProvider', '$mdDateLocaleProvider',
-    function ($mdThemingProvider, $compileProvider, $mdDateLocaleProvider) {
-        // $mdThemingProvider.theme('default')
-        //     .primaryPalette('light-green')
-        //     .accentPalette('red');
+app.config(['$mdThemingProvider', '$compileProvider', '$mdDateLocaleProvider', '$provide',
+    function ($mdThemingProvider, $compileProvider, $mdDateLocaleProvider, $provide) {
+        // base theme can be default, dark, light or none
+        // allowed colours for palettes
+        // red, pink, purple, deep-purple, indigo, blue, light-blue, cyan, teal, green, light-green, lime, yellow, amber, orange, deep-orange, brown, grey, blue-grey
+        $mdThemingProvider.generateThemesOnDemand(true);
+        $provide.value('themeProvider', $mdThemingProvider);
 
         //white-list all protocols
         $compileProvider.aHrefSanitizationWhitelist(/.*/);
 
+        //set the locale provider
         $mdDateLocaleProvider.months = moment.localeData().months();
         $mdDateLocaleProvider.shortMonths = moment.localeData().monthsShort();
         $mdDateLocaleProvider.days = moment.localeData().weekdays();
@@ -33,8 +60,8 @@ app.config(['$mdThemingProvider', '$compileProvider', '$mdDateLocaleProvider',
     }
 ]);
 
-app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$location', '$document', '$mdToast', '$mdDialog', '$rootScope', '$sce', '$timeout', '$scope',
-    function ($mdSidenav, $window, events, $location, $document, $mdToast, $mdDialog, $rootScope, $sce, $timeout, $scope) {
+app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$location', '$document', '$mdToast', '$mdDialog', '$rootScope', '$sce', '$timeout', '$scope', 'themeProvider', '$mdTheming',
+    function ($mdSidenav, $window, events, $location, $document, $mdToast, $mdDialog, $rootScope, $sce, $timeout, $scope, themeProvider, $mdTheming) {
         this.menu = [];
         this.headElementsAppended = [];
         this.headOriginalElements = [];
@@ -43,8 +70,11 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
         this.loaded = false;
         this.hideToolbar = false;
         this.allowSwipe = false;
+        this.lockMenu = false;
+        this.allowTempTheme = true;
         var main = this;
-        var audiocontext;
+        var audioContext;
+        var audioSource;
         var voices = [];
         var tabId = 0;
 
@@ -81,6 +111,10 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                 // open in new tab
                 if (menu.target === 'newtab') {
                     $window.open(menu.link, menu.name);
+                }
+                // open in existing tab (closes dashboard)
+                else if (menu.target === 'thistab') {
+                    $window.open(menu.link, "_self");
                 }
                 // open in iframe  (if allowed by remote site)
                 else {
@@ -125,6 +159,10 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                     lessObj["@"+lessVariable] = themeState.value;
                 }
             }
+            if (typeof main.allowTempTheme === 'undefined') { main.allowTempTheme = true; }
+            lessObj["@nrTemplateTheme"] = main.allowTempTheme;
+            lessObj["@nrTheme"] = !main.allowAngularTheme;
+            lessObj["@nrUnitHeight"] = (main.sizes.sy / 2)+"px";
             less.modifyVars(lessObj);
         }
 
@@ -137,7 +175,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
 
             // reset original elements
             main.headOriginalElements.forEach(function(headOriginalEl) {
-                resetOriginalHeadEl(headOriginalEl);
+                resetHeadOriginalEl(headOriginalEl);
             })
 
             // add elements
@@ -148,6 +186,24 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                     }
                 })
             }
+        }
+
+        function hideGroups() {
+            var flag = false;
+            for (var t in main.menu) {
+                if (main.menu.hasOwnProperty(t)) {
+                    for (var g in main.menu[t].items) {
+                        if (main.menu[t].items.hasOwnProperty(g)) {
+                            var c = (main.menu[t].header+" "+main.menu[t].items[g].header.name).replace(/ /g,"_");
+                            if ((typeof localStorage !== 'undefined') && (localStorage.getItem("g"+c) == "true")) {
+                                main.menu[t].items[g].header.config.hidden = true;
+                                flag = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (flag === true) { $(window).trigger('resize'); }
         }
 
         function replaceHeadOriginalEl (headOriginalEl, format) {
@@ -238,14 +294,29 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
             main.nothing = false;
             var name;
             if (ui.site) {
-                name = ui.site.name;
+                name = main.name = ui.site.name;
                 main.hideToolbar = (ui.site.hideToolbar == "true");
                 main.allowSwipe = (ui.site.allowSwipe == "true");
+                main.lockMenu = (ui.site.lockMenu == "true");
+                if (typeof ui.site.allowTempTheme === 'undefined') { main.allowTempTheme = true; }
+                else {
+                    main.allowTempTheme = (ui.site.allowTempTheme == "true");
+                    main.allowAngularTheme = (ui.site.allowTempTheme == "none");
+                }
                 dateFormat = ui.site.dateFormat || "DD/MM/YYYY";
                 if (ui.site.hasOwnProperty("sizes")) {
                     sizes.setSizes(ui.site.sizes);
                     main.sizes = ui.site.sizes;
                 }
+            }
+            if (ui.theme && ui.theme.angularTheme) {
+                themeProvider.theme('default')
+                    .primaryPalette(ui.theme.angularTheme.primary || 'indigo')
+                    .accentPalette(ui.theme.angularTheme.accents || 'blue')
+                    .warnPalette(ui.theme.angularTheme.warn || 'red')
+                    .backgroundPalette(ui.theme.angularTheme.background || 'grey');
+                if (ui.theme.angularTheme.palette === "dark") { themeProvider.theme('default').dark(); }
+                $mdTheming.generateTheme('default');
             }
             $document[0].theme = ui.theme;
             if (ui.title) { name = ui.title }
@@ -273,6 +344,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                 $mdToast.hide();
                 processGlobals();
                 events.emit('ui-change', prevTabIndex);
+                hideGroups();
                 done();
             }
             if (!isNaN(prevTabIndex) && prevTabIndex < main.menu.length) {
@@ -342,15 +414,18 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                 found = findHeadOriginalEl(msg.id);
                 if (found) {
                     replaceHeadOriginalEl(found, msg.msg.template)
-                } else {
+                }
+                else {
                     found = findHeadElAppended(msg.id);
                     if (found) {
                         replaceHeadEl(found, msg.msg.template)
-                    } else {
+                    }
+                    else {
                         return;
                     }
                 }
-            } else {
+            }
+            else {
                 found = findControl(msg.id, main.menu);
                 if (found === undefined) { return; }
                 for (var key in msg) {
@@ -392,7 +467,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                         .ok(msg.ok)
                         .clickOutsideToClose(false)
                 }
-                $mdDialog.show(confirm).then(
+                $mdDialog.show(confirm, { panelClass:'nt-dashboard-dialog' }).then(
                     function() {
                         msg.msg.payload = msg.ok;
                         events.emit({ id:msg.id, value:msg });
@@ -420,7 +495,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
 
         events.on('ui-control', function(msg) {
             if (msg.hasOwnProperty("socketid") && (msg.socketid !== events.id) ) { return; }
-            if (msg.hasOwnProperty("control")) {
+            if (msg.hasOwnProperty("control")) { // if it's a request to modify a control
                 //console.log("MSG",msg);
                 found = findControl(msg.id, main.menu);
                 //console.log("FOUND",found);
@@ -454,9 +529,57 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                 if (Number.isNaN(index) || index < 0) { return; }
                 if (index < main.menu.length) { main.open(main.menu[index], index); }
             }
+            if (msg.hasOwnProperty("group")) {  // it's to control a group item
+                if (typeof msg.group === 'object') {
+                    for (var t in main.menu) {
+                        if (main.menu.hasOwnProperty(t)) {
+                            var eldiv;
+                            for (var g in main.menu[t].items) {
+                                if (main.menu[t].items.hasOwnProperty(g)) {
+                                    var c = (main.menu[t].header+" "+main.menu[t].items[g].header.name).replace(/ /g,"_");
+                                    if (msg.group.hasOwnProperty("show")) {
+                                        if (msg.group.show.indexOf(c) > -1) {
+                                            main.menu[t].items[g].header.config.hidden = undefined;
+                                            localStorage.removeItem("g"+c);
+                                            eldiv = c;
+                                        }
+                                    }
+                                    if (msg.group.hasOwnProperty("hide")) {
+                                        if (msg.group.hide.indexOf(c) > -1) {
+                                            main.menu[t].items[g].header.config.hidden = true;
+                                            localStorage.setItem("g"+c,true);
+                                        }
+                                    }
+                                    $(window).trigger('resize');
+                                }
+                            }
+                            if (msg.group.hasOwnProperty("focus") && eldiv) {
+                                setTimeout(function() {
+                                    eldiv = $(window)[0].document.getElementById(eldiv);
+                                    if (eldiv) { eldiv.scrollIntoView(); }
+                                }, 50);
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         events.on('ui-audio', function(msg) {
+            if (msg.reset) {
+                if (audioSource) {
+                    // Stop the current audio source immediately
+                    audioSource.disconnect();
+                    audioSource.stop(0);
+                    audioSource = null;
+                    events.emit('ui-audio', 'reset');
+                }
+                else if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    events.emit('ui-audio', 'reset');
+                }
+                return;
+            }
             if (!msg.always) {
                 var totab;
                 for (var i in main.menu) {
@@ -468,12 +591,15 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
             if (msg.hasOwnProperty("tts")) {
                 if (voices.length > 0) {
                     var words = new SpeechSynthesisUtterance(msg.tts);
+                    words.onerror = function(err) { events.emit('ui-audio', 'error: '+err.error); }
+                    words.onend = function(event) { events.emit('ui-audio', 'complete'); }
                     for (var v=0; v<voices.length; v++) {
                         if (voices[v].lang === msg.voice) {
                             words.voice = voices[v];
                             break;
                         }
                     }
+                    events.emit('ui-audio', 'playing');
                     window.speechSynthesis.speak(words);
                 }
                 else {
@@ -488,16 +614,24 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                     window.AudioContext = window.AudioContext||window.webkitAudioContext||window.mozAudioContext;
                 }
                 try {
-                    audiocontext = audiocontext || new AudioContext();
-                    var source = audiocontext.createBufferSource();
+                    audioContext = audioContext || new AudioContext();
+                    audioSource = audioContext.createBufferSource();
+                    audioSource.onended = function() {
+                        events.emit('ui-audio', 'complete');
+                    }
                     var buffer = new Uint8Array(msg.audio);
-                    audiocontext.decodeAudioData(buffer.buffer, function(buffer) {
-                        source.buffer = buffer;
-                        source.connect(audiocontext.destination);
-                        source.start(0);
-                    })
+                    audioContext.decodeAudioData(
+                        buffer.buffer,
+                        function(buffer) {
+                            audioSource.buffer = buffer;
+                            audioSource.connect(audioContext.destination);
+                            audioSource.start(0);
+                            events.emit('ui-audio', 'playing');
+                        },
+                        function(err) { events.emit('ui-audio', 'error'); }
+                    )
                 }
-                catch(e) { alert("Error playing audio: "+e); }
+                catch(e) { events.emit('ui-audio', 'error'); }
             }
         });
     }]);

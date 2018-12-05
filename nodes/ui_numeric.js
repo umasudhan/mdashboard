@@ -22,16 +22,21 @@ module.exports = function(RED) {
             control: {
                 type: 'numeric',
                 label: config.label,
+                tooltip: config.tooltip,
                 order: config.order,
                 format: config.format,
+                pre: config.format.split('{{')[0] || "",
+                post: config.format.split('}}')[1] || "",
                 value: Number(config.min),
                 min: Number(config.min),
                 max: Number(config.max),
                 step: Number(config.step || 1),
                 width: config.width || group.config.width || 6,
-                height: config.height || 1
+                height: config.height || 1,
+                ed: (config.format.includes("value") ? false : true)
             },
             beforeSend: function (msg) {
+                msg.payload = parseFloat(msg.payload);
                 msg.topic = config.topic || msg.topic;
                 if (node.pt) {
                     node.status({shape:"dot",fill:"grey",text:msg.payload});

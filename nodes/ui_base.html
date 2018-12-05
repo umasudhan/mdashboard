@@ -17,6 +17,9 @@
         width: calc(100% - 100px);
         margin-bottom:0;
     }
+    .nr-db-sb .compact {
+        margin-bottom: 8px !important;
+    }
     .nr-db-sb .red-ui-editableList-container {
         padding: 0;
         min-height: 250px;
@@ -166,6 +169,9 @@
     .red-ui-tabs {
         margin-bottom: 15px;
     }
+    .red-ui-tab.hidden {
+        display: none;;
+    }
     #mdashboard-tabs-list li a:hover {
         cursor: pointer;
     }
@@ -230,9 +236,9 @@
                 document.body.appendChild(jsScript);
                 //console.log('Tiny Color Loaded:',path);
             },
-            error:function (xhr, ajaxOptions, thrownError) {
+            error: function (xhr, ajaxOptions, thrownError) {
                 if (xhr.status === 404 && !attemptedVendorLoad) {
-                    loadTinyColor(uip+'/vendor/tinycolor2/dist/tinycolor-min.js');
+                    loadTinyColor('/'+uip+'/vendor/tinycolor2/dist/tinycolor-min.js');
                     attemptedVendorLoad = true;
                 }
             }
@@ -274,6 +280,7 @@
                 'm-group-textColor', 'm-group-borderColor', 'm-group-backgroundColor',
                 'm-widget-textColor', 'm-widget-backgroundColor','m-widget-borderColor'];
                 var baseFontName = "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif";
+                var aTheme = {primary:"indigo", accents:"blue", warn:"red", background:"grey"};
                 // tiny colour implementation
                 var colours = {
                     leastReadable: function(base, colours) {
@@ -452,22 +459,29 @@
                                 lightTheme: lightTheme,
                                 darkTheme: darkTheme,
                                 customTheme: customTheme,
-                                themeState: themeState
+                                themeState: themeState,
+                                angularTheme: aTheme
                             }
 
                             var site_name = c_("site.title");
                             var site_date_format = c_("site.date-format");
-                            var site = { name:site_name, hideToolbar:"false", allowSwipe:"false", dateFormat:site_date_format, sizes:sizes };
+                            var site = { name:site_name, hideToolbar:"false", allowSwipe:"false", lockMenu:"false", allowTempTheme:"true", dateFormat:site_date_format, sizes:sizes };
                             if (globalDashboardNode !== null) {
                                 if (typeof globalDashboardNode.site !== "undefined") {
                                     site = {
                                         name: globalDashboardNode.site.name || globalDashboardNode.name,
                                         hideToolbar: globalDashboardNode.site.hideToolbar,
+                                        lockMenu: globalDashboardNode.site.lockMenu,
                                         allowSwipe: globalDashboardNode.site.allowSwipe,
+                                        allowTempTheme: globalDashboardNode.site.allowTempTheme,
                                         dateFormat: globalDashboardNode.site.dateFormat,
                                         sizes: globalDashboardNode.site.sizes
                                     }
                                 }
+                                if (globalDashboardNode.theme.hasOwnProperty("angularTheme")) {
+                                    aTheme = globalDashboardNode.theme.angularTheme;
+                                }
+                                else { globalDashboardNode.theme.angularTheme = aTheme; }
                             }
 
                             if (noDashboardNode) {
@@ -501,11 +515,13 @@
                 var divTab = $('<div class="red-ui-tabs">').appendTo(form);
                 var ulDashboardTabs = $('<ul id="mdashboard-tabs-list"></ul>').appendTo(divTab);
                 var layout_label = c_("label.layout");
-                var theme_label = c_("label.theme");
                 var site_label = c_("label.site");
+                var theme_label = c_("label.theme");
+                var angular_label = c_("label.angular");
                 var liLayoutTab = $('<li class="red-ui-tab" style="width:70px;"><a class="red-ui-tab-label" title="Layout"><span>'+layout_label+'</span></a></li>').appendTo(ulDashboardTabs);
-                var liThemeTab = $('<li class="red-ui-tab" style="width:70px;"><a class="red-ui-tab-label" title="Theme" style="width:80px;"><span>'+theme_label+'</span></a></li>').appendTo(ulDashboardTabs);
                 var liSiteTab = $('<li class="red-ui-tab" style="width:70px;"><a class="red-ui-tab-label" title="Site" style="width:60px;"><span>'+site_label+'</span></a></li>').appendTo(ulDashboardTabs);
+                var liThemeTab = $('<li class="red-ui-tab" style="width:70px;"><a class="red-ui-tab-label" title="Theme" style="width:80px;"><span>'+theme_label+'</span></a></li>').appendTo(ulDashboardTabs);
+                var liAngularTab = $('<li class="red-ui-tab" style="width:70px;"><a class="red-ui-tab-label" title="Angular" style="width:80px;"><span>'+angular_label+'</span></a></li>').appendTo(ulDashboardTabs);
 
                 // Link out to dashboard
                 $.getJSON('uisettings',function(data) {
@@ -532,6 +548,7 @@
                 var layoutTab = $('<div id="mdashboard-layout" style="height:calc(100% - 48px)">').appendTo(form);
                 var themeTab = $('<div id="mdashboard-theme" style="display:none;">').appendTo(form);
                 var siteTab = $('<div id="mdashboard-site" style="display:none;">').appendTo(form);
+                var angularTab = $('<div id="dashboard-angular" style="display:none;">').appendTo(form);
 
                 ulDashboardTabs.children().first().addClass("active");
 
@@ -546,11 +563,19 @@
                     if (selectedTab === 'Layout') {
                         themeTab.hide();
                         siteTab.hide();
+                        angularTab.hide();
                         layoutTab.show();
+                    }
+                    else if (selectedTab === 'Angular') {
+                        themeTab.hide();
+                        siteTab.hide();
+                        angularTab.show();
+                        layoutTab.hide();
                     }
                     else if (selectedTab === 'Theme') {
                         layoutTab.hide();
                         siteTab.hide();
+                        angularTab.hide();
                         themeTab.show();
                         if ($("#mnr-db-field-theme option:selected").val() === 'theme-custom') { themeSettingsContainer.show(); }
                         else { themeSettingsContainer.hide(); }
@@ -558,6 +583,7 @@
                     else {
                         layoutTab.hide();
                         themeTab.hide();
+                        angularTab.hide();
                         siteTab.show();
                     }
                 }
@@ -565,7 +591,7 @@
                 ulDashboardTabs.find("li.red-ui-tab a").on("click",onTabClick)
 
                 // Site Tab
-                var divTitle = $('<div>',{class:"form-row"}).appendTo(siteTab);
+                var divTitle = $('<div>',{class:"form-row compact"}).appendTo(siteTab);
                 $('<div>').html('<b>'+c_("label.title")+'</b>').appendTo(divTitle);
                 $('<input type="text" id="mnr-db-field-title">').val(site_name).css("width","100%")
                 .change(function() {
@@ -577,7 +603,7 @@
                 })
                 .appendTo(divTitle);
 
-                var divHideToolbar = $('<div>',{class:"form-row"}).appendTo(siteTab);
+                var divHideToolbar = $('<div>',{class:"form-row compact"}).appendTo(siteTab);
                 $('<div>').html('<b>'+c_("label.options")+'</b>').appendTo(divHideToolbar);
                 $('<select id="mnr-db-field-hideToolbar">')
                 .css("width","100%")
@@ -592,6 +618,21 @@
                     }
                 })
                 .appendTo(divHideToolbar);
+
+                var divLockMenu = $('<div>',{class:"form-row compact"}).appendTo(siteTab);
+                $('<select id="mnr-db-field-lockMenu">')
+                    .css("width","100%")
+                    .append($('<option>', { value:"false", text:c_("lock.clicked"), selected:true }))
+                    .append($('<option>', { value:"true", text:c_("lock.locked") }))
+                    .val("false")
+                    .change(function() {
+                        if (!globalDashboardNode || globalDashboardNode.site.lockMenu !== $(this).val()) {
+                            ensureDashboardNode(true);
+                            globalDashboardNode.site.lockMenu = $(this).val();
+                            RED.nodes.dirty(true);
+                        }
+                    })
+                    .appendTo(divLockMenu);
 
                 var divAllowSwipe = $('<div>',{class:"form-row"}).appendTo(siteTab);
                 $('<select id="mnr-db-field-allowSwipe">')
@@ -608,10 +649,34 @@
                 })
                 .appendTo(divAllowSwipe);
 
+                var divAllowTempTheme = $('<div>',{class:"form-row compact"}).appendTo(siteTab);
+                $('<select id="nr-db-field-allowTempTheme">')
+                .css("width","100%")
+                .append($('<option>', { value:"true", text:c_("temp.allow-theme"), selected:true }))
+                .append($('<option>', { value:"false", text:c_("temp.no-theme") }))
+                .append($('<option>', { value:"none", text:c_("temp.none") }))
+                .val("true")
+                .change(function() {
+                    if (!globalDashboardNode || globalDashboardNode.site.allowTempTheme !== $(this).val()) {
+                        ensureDashboardNode(true);
+                        globalDashboardNode.site.allowTempTheme = $(this).val();
+                        RED.nodes.dirty(true);
+                    }
+                    if ($('#mnr-db-field-allowTempTheme').val() === "none") {
+                        ulDashboardTabs.children().eq(2).addClass("hidden");
+                        ulDashboardTabs.children().eq(3).removeClass("hidden");
+                    }
+                    else {
+                        ulDashboardTabs.children().eq(2).removeClass("hidden");
+                        ulDashboardTabs.children().eq(3).addClass("hidden");
+                    }
+                })
+                .appendTo(divAllowTempTheme);
+
                 var site_name = c_("site.title");
                 var site_date_format = c_("site.date-format");
                 var divDateFormat = $('<div>',{class:"form-row"}).appendTo(siteTab);
-                $('<div">').html('<b>'+c_("label.date-format")+'</b>')
+                $('<div>').html('<b>'+c_("label.date-format")+'</b>')
                 .css("width","80%")
                 .css("display","inline-block")
                 .appendTo(divDateFormat);
@@ -686,6 +751,97 @@
                 .appendTo(divSetSizes);
 
 
+                // Angular Theme Tab
+                var changed = function() {
+                    ensureDashboardNode(true);
+                    globalDashboardNode.theme.angularTheme = aTheme;
+                    RED.nodes.dirty(true);
+                }
+
+                var angColorList = ["red", "pink", "purple", "deep-purple", "indigo", "blue", "light-blue", "cyan", "teal", "green", "light-green", "lime", "yellow", "amber", "orange", "deep-orange", "brown", "grey", "blue-grey"];
+                var angColors = "";
+                angColorList.forEach(function(c) { angColors += '<option value="' + c + '">' + c + '</option>'; });
+
+                var divPrimStyle = $('<div>',{class:"form-row"}).appendTo(angularTab);
+                $('<span style="width:45%; display:inline-block">')
+                    .html('<b>'+c_("style.primary")+'</b>')
+                    .appendTo(divPrimStyle);
+                $('<i id="ang-reset" class="fa fa-undo nr-db-resetIcon"></i>')
+                    .css({opacity:1.0})
+                    .click(function(e) {
+                        $("#mnr-db-field-angPrimary").val("indigo"); globalDashboardNode.theme.angularTheme.primary = "indigo";
+                        RED.nodes.dirty(true);
+                    })
+                    .appendTo(divPrimStyle);
+                $('<select id="mnr-db-field-angPrimary">'+angColors+'</select>')
+                    .css("width","100%")
+                    .val(aTheme.primary)
+                    .change(function() { aTheme.primary = $(this).val(); changed(); })
+                    .appendTo(divPrimStyle);
+
+                var divAccStyle = $('<div>',{class:"form-row"}).appendTo(angularTab);
+                $('<span style="width:45%; display:inline-block">')
+                    .html('<b>'+c_("style.accents")+'</b>')
+                    .appendTo(divAccStyle);
+                $('<i id="ang-reset" class="fa fa-undo nr-db-resetIcon"></i>')
+                    .css({opacity:1.0})
+                    .click(function(e) {
+                        $("#mnr-db-field-angAccents").val("blue"); globalDashboardNode.theme.angularTheme.accents = "blue";
+                        RED.nodes.dirty(true);
+                    })
+                    .appendTo(divAccStyle);
+                $('<select id="mnr-db-field-angAccents">'+angColors+'</select>')
+                    .css("width","100%")
+                    .val(aTheme.accents)
+                    .change(function() { aTheme.accents = $(this).val(); changed(); })
+                    .appendTo(divAccStyle);
+
+                var divWarnStyle = $('<div>',{class:"form-row"}).appendTo(angularTab);
+                $('<span style="width:45%; display:inline-block">')
+                    .html('<b>'+c_("style.warnings")+'</b>')
+                    .appendTo(divWarnStyle);
+                $('<i id="mang-reset" class="fa fa-undo nr-db-resetIcon"></i>')
+                    .css({opacity:1.0})
+                    .click(function(e) {
+                        $("#mnr-db-field-angWarn").val("red"); globalDashboardNode.theme.angularTheme.warn = "red";
+                        RED.nodes.dirty(true);
+                    })
+                    .appendTo(divWarnStyle);
+                $('<select id="mnr-db-field-angWarn">'+angColors+'</select>')
+                    .css("width","100%")
+                    .val(aTheme.warn)
+                    .change(function() { aTheme.warn = $(this).val(); changed(); })
+                    .appendTo(divWarnStyle);
+
+                var divBackStyle = $('<div>',{class:"form-row"}).appendTo(angularTab);
+                $('<span style="width:45%; display:inline-block">')
+                    .html('<b>'+c_("style.background")+'</b>')
+                    .appendTo(divBackStyle);
+                $('<i id="ang-reset" class="fa fa-undo nr-db-resetIcon"></i>')
+                    .css({opacity:1.0})
+                    .click(function(e) {
+                        $("#mnr-db-field-angBackground").val("grey"); globalDashboardNode.theme.angularTheme.background = "grey";
+                        RED.nodes.dirty(true);
+                    })
+                    .appendTo(divBackStyle);
+                $('<select id="mnr-db-field-angBackground">'+angColors+'</select>')
+                    .css("width","100%")
+                    .val(aTheme.background)
+                    .change(function() { aTheme.background = $(this).val(); changed(); })
+                    .appendTo(divBackStyle);
+
+                var divPalStyle = $('<div>',{class:"form-row"}).appendTo(angularTab);
+                $('<span style="width:45%; display:inline-block">')
+                    .html('<b>'+c_("style.palette")+'</b>')
+                    .appendTo(divPalStyle);
+                var lightdark = '<option value="light">' +c_("style.light")+ '</option>';
+                lightdark += '<option value="dark">' +c_("style.dark")+ '</option>';
+                $('<select id="mnr-db-field-angLook">'+lightdark+'</select>')
+                    .css("width","100%")
+                    .val(aTheme.palette || "light")
+                    .change(function() { aTheme.palette = $(this).val(); changed(); })
+                    .appendTo(divPalStyle);
+
                 // Theme Tab
                 // For all customisable styles, generate and apply the css
                 var generateColours = function(base) {
@@ -733,8 +889,8 @@
                         }
                         else { baseColour = globalDashboardNode.theme[theme+'Theme'].baseColor; }
                         setColourPickerColour("m-base-color", baseColour);
-                        globalDashboardNode.theme.themeState['m-base-color'].value = baseColour;
-                        globalDashboardNode.theme.themeState['m-base-color'].default = baseColour;
+                        globalDashboardNode.theme.themeState['base-color'].value = baseColour;
+                        globalDashboardNode.theme.themeState['base-color'].default = baseColour;
                         globalDashboardNode.theme.themeState['base-font'] = {value:baseFont};
                         $("#mnr-db-field-font").val(baseFont);
                         globalDashboardNode.theme[theme+'Theme'].reset = true;
@@ -994,7 +1150,6 @@
 
                 var tabLists = {};
                 var groupLists = {};
-                var linkNodes = {};
 
                 // toggle slide tab group content
                 var titleToggle = function (id,content,chevron) {
@@ -1158,7 +1313,7 @@
                                         elementParents[widgetNode.id] = groupNode.id;
                                         var titleRow = $('<div>',{class:"nr-db-sb-list-header nr-db-sb-widget-list-header"}).appendTo(container);
                                         $('<i class="nr-db-sb-list-handle nr-db-sb-widget-list-handle fa fa-bars"></i>').appendTo(titleRow);
-                                        $('<i class="nr-db-sb-icon nr-db-sb-widget-icon fa fa-picture-o"></i>').appendTo(titleRow);
+                                        $('<i class="nr-db-sb-icon nr-db-sb-widget-icon fa fa-picture-o"></i>').click(function(e) { e.preventDefault(); RED.search.show(widgetNode.id); }).appendTo(titleRow);
                                         var l = widgetNode._def.label;
                                         try {
                                             l = (typeof l === "function" ? l.call(widgetNode) : l)||"";
@@ -1542,8 +1697,9 @@
                     ensureDashboardNode(true);
                     if (globalDashboardNode) {
                         $("#mnr-db-field-title").val(globalDashboardNode.site.name);
-                        $("#mnr-db-field-allowSwipe").val(globalDashboardNode.site.allowSwipe || false);
-                        $("#mnr-db-field-hideToolbar").val(globalDashboardNode.site.hideToolbar || false);
+                        $("#mnr-db-field-allowSwipe").val(globalDashboardNode.site.allowSwipe || "false");
+                        $("#mnr-db-field-allowTempTheme").val(globalDashboardNode.site.allowTempTheme || "true");
+                        $("#mnr-db-field-hideToolbar").val(globalDashboardNode.site.hideToolbar || "false");
                         $("#mnr-db-field-dateFormat").val(globalDashboardNode.site.dateFormat);
 
                         if (typeof globalDashboardNode.site.sizes !== "object") {
@@ -1558,8 +1714,19 @@
                         $("#mnr-db-field-gx").val(globalDashboardNode.site.sizes.gx);
                         $("#mnr-db-field-gy").val(globalDashboardNode.site.sizes.gy);
 
+
+                        if (typeof globalDashboardNode.theme.angularTheme !== "object") {
+                            globalDashboardNode.theme.angularTheme = aTheme;
+                        }
+                        $("#mnr-db-field-angPrimary").val(globalDashboardNode.theme.angularTheme.primary || "indigo");
+                        $("#mnr-db-field-angAccents").val(globalDashboardNode.theme.angularTheme.accents || "blue");
+                        $("#mnr-db-field-angWarn").val(globalDashboardNode.theme.angularTheme.warn || "red");
+                        $("#mnr-db-field-angBackground").val(globalDashboardNode.theme.angularTheme.background || "grey");
+
                         $("#mnr-db-field-theme").val(globalDashboardNode.theme.name);
                         $("#mui-sidebar-name").val(globalDashboardNode.theme.customTheme.name);
+
+
                         if (globalDashboardNode.theme.name === 'theme-custom') {
                             $("#mcustom-theme-library-container").show();
                             $("#mcustom-theme-settings").show();
@@ -1567,6 +1734,14 @@
                         else {
                             $("#mcustom-theme-library-container").hide();
                             $("#mcustom-theme-settings").hide();
+                        }
+                        if ($('#mnr-db-field-allowTempTheme').val() === "none") {
+                            ulDashboardTabs.children().eq(2).addClass("hidden");
+                            ulDashboardTabs.children().eq(3).removeClass("hidden");
+                        }
+                        else {
+                            ulDashboardTabs.children().eq(2).removeClass("hidden");
+                            ulDashboardTabs.children().eq(3).addClass("hidden");
                         }
 
                         //set colour start
@@ -1651,6 +1826,9 @@
                                     RED.nodes.dirty(true);
                                 }
                             }
+                            if (JSON.stringify(aTheme) !== JSON.stringify(globalDashboardNode.theme.angularTheme)) {
+                                globalDashboardNode.theme.angularTheme = aTheme;
+                            }
 
                             //Update site object if necessary
                             if (JSON.stringify(editorObject.site) !== JSON.stringify(globalDashboardNode.site)) {
@@ -1659,6 +1837,7 @@
                                 $("#mnr-db-field-hideToolbar").val(globalDashboardNode.site.hideToolbar);
                                 $("#mnr-db-field-allowSwipe").val(globalDashboardNode.site.allowSwipe);
                                 $("#mnr-db-field-dateFormat").val(globalDashboardNode.site.dateFormat);
+                                $("#mnr-db-field-allowTempTheme").val(globalDashboardNode.site.allowTempTheme);
                                 $("#mnr-db-field-sx").val(globalDashboardNode.site.sizes.sx);
                                 $("#mnr-db-field-sy").val(globalDashboardNode.site.sizes.sy);
                                 $("#mnr-db-field-px").val(globalDashboardNode.site.sizes.px);
@@ -1670,7 +1849,6 @@
                                 RED.nodes.dirty(true);
                             }
                         });
-
                     }
                     awaitingGroups = {};
                     awaitingTabs = {};
@@ -1682,6 +1860,8 @@
                     name: "Dashboard",
                     content: content,
                     closeable: true,
+                    pinned: true,
+                    iconClass: "fa fa-bar-chart",
                     disableOnEdit: true,
                     onchange: function() { refresh(); }
                 });
@@ -1722,6 +1902,7 @@
                                         groupLists[elementParents[node.id]].editableList('removeItem',listElements[node.id].data('data'))
                                     }
                                     if (groupLists[node.group]) {
+                                        groupLists[node.group].editableList('removeItem',node)
                                         groupLists[node.group].editableList('addItem',node);
                                     }
                                 }
@@ -2121,7 +2302,10 @@
 
 <script type="text/x-red" data-template-name="mui_base">
     <div class='form-row'>
-        <a href="#" onclick="RED.sidebar.show('dashboard'); $('#node-config-dialog-cancel').click(); return false" class="editor-button">Open dashboard sidebar</a>
+        This <i>mui_base</i> node is the main node that all<br/>other multi dashboard widget nodes communicate to.<br/>
+        <br/>One instance is required to support the dashboard.<br/>
+        <br/>If you have no mdashboard you can delete this node.<br/>
+        It will be re-created automatically if required.<br/>
     </div>
 </script>
 

@@ -19,6 +19,7 @@ module.exports = function(RED) {
             control: {
                 type: (config.delay <= 0 ? 'text-input-CR' : 'text-input'),
                 label: config.label,
+                tooltip: config.tooltip,
                 mode: config.mode,
                 delay: config.delay,
                 order: config.order,

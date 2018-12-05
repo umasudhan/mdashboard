@@ -1,4 +1,155 @@
 
+### 2.11.1: Maintenance Release
+
+**Fixes**
+
+ - Let ui_text node handle buffers without mangling to utf8
+ - Fix ui_template info odd/even example to work again (after theme changes)
+
+### 2.11.0: Milestone Release
+
+**Enhancements**
+
+ - Let side menu be locked open via site config tab - Issue #446
+ - Let audio playback node show status in editor for debug
+
+**Fixes**
+
+ - Fix button background CSS so it can be over-ridden - Issue #444
+
+### 2.10.1: Maintenance Release
+
+**Enhancements**
+
+ - Let slider only send on mouse release (discrete mode)
+
+**Fixes**
+
+ - Stop background path css escape for gauge
+ - Fix radar chart so it picks up theme - Issue #443
+
+### 2.10.0: Milestone Release
+
+**Enhancements**
+
+ - Add PR to allow pluggable widgets. PR #427
+   - see https://github.com/node-red/node-red-dashboard/wiki/Creating-New-Dashboard-Widgets
+ - Let users use 100% Angular theme if desired.
+ - Add footer div with id nr-dashboard-footer to make targeting easier.
+ - Add Japanese translations for ui_control node. PR #439
+
+**Fixes**
+
+ - Add polyfill for IE11 Object.assign. Issue #402
+ - Tweak colour picker to default to solid colours
+ - Fix up ng-click colours in list. Issue #433
+
+### 2.9.8: Maintenance Release
+
+**Fixes**
+
+ - Tidy up dashboard widget list if widget moved then renamed. Issue #426
+ - Let numeric widget handle angular filters again for value. Issue #428
+
+### 2.9.7: Maintenance Release
+
+**Enhancements**
+
+ - Let link specify existing tab. Issue #420
+ - Let bar charts specify legend if required. Issue #423
+ - Add more links to lists of icons available.
+
+**Fixes**
+
+ - Ensure old forms Submit/Cancel buttons still display a value.
+ - Let internal form elements scale more appropriately with grid size. Issue #416
+ - Adjust slider timing to try to better smooth output
+
+### 2.9.6: Maintenance Release
+
+**Fixes**
+
+ - Update socket.io to remove audit vulnerability. Issue #411
+
+### 2.9.5: Maintenance Release
+
+**Fixes**
+
+ - Remove colour from button when in template in no style mode. Issue #400
+ - Fix format support for numeric widget. Issue #401
+ - Fix min-width of dropdown label field. Issue #405
+ - Let blank value field in gauge NOT display the value text (default to payload). Issue #406
+ - Let form buttons have changeable text. Issue #408
+
+### 2.9.4: Maintenance Release
+
+**Fixes**
+
+ - Let text input node handle floating point input when in numeric mode. Issue #391
+ - Fix incorrect scoping of colour palettes in charts. Issue #396
+ - Docs updates re some of the ui_control to make groups show/hide.
+
+### 2.9.3: Maintenance Release
+
+**Fixes**
+
+ - Revert change to sessionStorage - better fix for Issue #386, unfix Issue #384
+
+### 2.9.2: Maintenance Release
+
+**Fixes**
+
+ - Let dropdown edit config, scale more sensibly on slide out.
+ - Change to sessionStorage to mitigate httpAuth issue. Issue #384
+ - Ensure groups are restored rather than completely disappeared on refresh. Issue #386
+ - Let bar charts also auto scale negative values. Issue #387
+ - Use rounded line joins on charts to reduce spiky-ness.
+ - Ensure numeric input matches theme (now that it is editable)
+ - Fix Gauge so {{ format }} works again.
+
+### 2.9.1: Maintenance Release
+
+**Fixes**
+
+- Let dashboard work if localstorage not available. PR #383
+- Let numeric field also be editable
+- Clean up gauge value (to be more as previously). Issue #385
+
+### 2.9.0: Milestone Release
+
+**Enhancements**
+
+ - Allow groups to be hidden and made visible via ui_control {group:{hide:["tab_name_group_name_with_underscores"],show:["another_group"],focus:true}}
+ - Allow `readOnly:true` in settings.js `ui` section to disable all input to dashboard.
+ You can still click/type but nothing gets sent to backend.
+ - Add "No theme in ui_template" option to site options to allow regular angular theme through. Issue #379
+ - Add option to remove hue slider from color-picker
+
+ **Fixes**
+
+ - Monkeypatch fix for Justgage negative numbers. Issue #113
+ - Ensure toast is a string.
+ - Clean up require of tinycolor2. Issue #367
+ - Allow numeric input in form to accept floating point numbers. Issue #368
+ - Fix small wrinkle in reset of head elements on reload
+ - Fix Use of object assign for IE11. Issue #372
+ - Fix button background colour for IE11. Issue #373
+ - Let Gauge display invalid value as text, and set pointer to minimum value rather than 0
+ - Fix date picker width to stop css overrides. Issue #378
+ - Try to resolve blurred charts. Issues #302 and #380
+
+### 2.8.2: Maintenance Release
+
+**Enhancements**
+
+  - Let Gauge units be specified by msg {{property}}
+
+**Fixes**
+
+ - Better fix for numeric field widths. Issue #344
+ - Fix some theme <-> library consistency issues
+ - Clean up old line chart data from other topics after 60s. Issue #342 and #360
+
 ### 2.8.1: Maintenance Release
 
 **Enhancements**
@@ -8,7 +159,7 @@
 **Fixes**
 
  - Fix references to FontAwesome to pin to version 4.7.0 icons
- - Give numeric field a width so buttons don't wobble (so much)
+ - Give numeric field a width so buttons don't wobble (so much). Issue #344
  - Let gauge change labels more dynamically
  - ensure dateFormat defaults to something valid
 

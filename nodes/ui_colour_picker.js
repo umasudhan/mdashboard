@@ -25,6 +25,7 @@ module.exports = function(RED) {
                 showPicker: config.showPicker,
                 showSwatch: config.showSwatch,
                 showValue: config.showValue,
+                showHue: config.showHue,
                 showAlpha: config.showAlpha,
                 showLightness: config.showLightness,
                 dynOutput: config.dynOutput,

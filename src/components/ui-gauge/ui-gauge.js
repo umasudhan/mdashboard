@@ -27,7 +27,8 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
                             bgnd = "#097479";
                             fgnd = "#eeeeee";
                             tgnd = "#eeeeee";
-                        } else {
+                        }
+                        else {
                             bgnd = "#0094CE";
                             fgnd = "#111111";
                             tgnd = "#111111";
@@ -62,7 +63,10 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
                                 if (gaugeConfig.waveTextColor === undefined) { gaugeConfig.waveTextColor = fgnd; }
 
                                 if (scope.$eval('me.item.options') !== null) {
-                                    Object.assign(gaugeConfig, scope.$eval('me.item.options'));
+                                    //Object.assign(gaugeConfig, scope.$eval('me.item.options'));
+                                    Object.keys(scope.$eval('me.item.options')).forEach(function(key) {
+                                        gaugeConfig[key] = scope.$eval('me.item.options')[key];
+                                    });
                                 }
                                 gauge = loadLiquidFillGauge("gauge"+scope.$eval('$id'), scope.$eval('me.item.value'), gaugeConfig);
                                 unreg = scope.$watch('me.item.value', function(newValue) {
@@ -92,7 +96,7 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
                                     pointer: true,
                                     relativeGaugeSize: true,
                                     textRenderer: function(v) {
-                                        return scope.$eval('me.item.getText()') || 0;
+                                        return scope.$eval('me.item.getText()') || "";
                                     }
                                 }
                                 if (scope.$eval('me.item.gtype') === 'donut') {
@@ -131,16 +135,32 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
                                     }
                                 }
                                 if (scope.$eval('me.item.options') !== null) {
-                                    Object.assign(gaugeOptions, scope.$eval('me.item.options'));
+                                    //Object.assign(gaugeOptions, scope.$eval('me.item.options'));
+                                    Object.keys(scope.$eval('me.item.options')).forEach(function(key) {
+                                        gaugeOptions[key] = scope.$eval('me.item.options')[key];
+                                    });
                                 }
 
                                 gauge = new JustGage(gaugeOptions);
+                                gauge.refreshLabel = function(label) { var obj = this; if (label && (typeof label == "string")) { obj.txtLabel.attr({ "text":label }); }}
+
+                                var oldUnits = "";
                                 unreg = scope.$watch('me.item.value', function(newValue) {
-                                    if (scope.$eval('me.item.gtype') === 'compass') {
-                                        var r = gaugeOptions.max - gaugeOptions.min;
-                                        newValue = newValue % r;
-                                        if (newValue < 0) { newValue += r; }
+                                    if (typeof newValue === "object") {
+                                        newValue = scope.$eval('me.item.getText()');
                                     }
+                                    if (isNaN(newValue = parseFloat(newValue))) {
+                                        newValue = gaugeOptions.min;
+                                    }
+                                    if (scope.$eval('me.item.getUnits()') !== oldUnits) {
+                                        oldUnits = scope.$eval('me.item.getUnits()');
+                                        gaugeOptions.label = oldUnits;
+                                        gauge.refreshLabel(oldUnits);
+                                    }
+                                    // if (scope.$eval('me.item.gtype') === 'compass') {
+                                    //     var r = gaugeOptions.max - gaugeOptions.min;
+                                    //     newValue = (newValue + r) % r;
+                                    // }
                                     gauge.refresh(newValue);
                                 });
                             });
