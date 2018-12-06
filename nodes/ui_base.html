@@ -1295,8 +1295,8 @@
                                 var spacerButton = $('<a href="#" class="editor-button editor-button-small nr-db-sb-list-header-button"><i class="fa fa-plus"></i> '+c_("layout.spacer")+'</a>').appendTo(buttonGroup);
                                 spacerButton.on('click',function(evt) {
                                     var spaceNode = {
-                                        _def: RED.nodes.getType("ui_spacer"),
-                                        type: "ui_spacer",
+                                        _def: RED.nodes.getType("mui_spacer"),
+                                        type: "mui_spacer",
                                         hasUsers: false,
                                         id: RED.nodes.id(),
                                         tab: item.node.name,
@@ -1617,7 +1617,7 @@
                                 groups[node.id] = node;
                                 break;
                             }
-                            case 'ui_spacer': {
+                            case 'mui_spacer': {
                                 if (groups.hasOwnProperty(node.group)) {
                                     groupElements[node.group] = groupElements[node.group]||[];
                                     groupElements[node.group].push(node);

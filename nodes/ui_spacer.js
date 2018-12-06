@@ -23,5 +23,5 @@ module.exports = function(RED) {
         });
         node.on("close", done);
     }
-    RED.nodes.registerType("ui_spacer", SpacerNode);
+    RED.nodes.registerType("mui_spacer", SpacerNode);
 };

@@ -1,7 +1,7 @@
 {
   "name": "node-red-contrib-mdashboard",
   "original_node_red_dashboard_version": "2.11.1-beta",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "A fork of node-red-dashboard project that lets multiple users input data without updating other screens",
     "keywords": [
         "node-red"
@@ -64,7 +64,8 @@
             "mui_template": "nodes/ui_template.js",
             "mui_link": "nodes/ui_link.js",
             "mui_tab": "nodes/ui_tab.js",
-            "mui_group": "nodes/ui_group.js"
+            "mui_group": "nodes/ui_group.js",
+            "mui_spacer": "nodes/ui_spacer.js"
         }
     },
     "dependencies": {
