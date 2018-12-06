@@ -39,7 +39,9 @@ module.exports = function(RED) {
         });
 
         node.on('input', function(msg) {
-            if ((node.multi === true) && (node.position !== "dialog")) { delete msg.socketid; }
+            if (node.position !== "dialog" && node.multi!==true) {
+                delete msg.socketid;
+            }
             msg.payload = noscript(msg.payload);
             ui.emitSocket('show-toast', {
                 title: node.topic || msg.topic,
