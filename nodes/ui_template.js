@@ -78,6 +78,17 @@ module.exports = function(RED) {
             }
         });
         node.on("close", done);
+
+
+        var sendconnect = function(id, ip) {
+            node.send({payload:"connect", socketid:id, socketip:ip});
+        };
+        ui.ev.on('newsocket', sendconnect);
+
+        var sendlost = function(id, ip) {
+            node.send({payload:"lost", socketid:id, socketip:ip});
+        };
+        ui.ev.on('endsocket', sendlost);
     }
     RED.nodes.registerType("mui_template", TemplateNode);
     RED.library.register("uitemplates");
