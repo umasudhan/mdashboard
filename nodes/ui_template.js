@@ -80,13 +80,13 @@ module.exports = function(RED) {
         node.on("close", done);
 
 
-        var sendconnect = function(id, ip) {
-            node.send({payload:"connect", socketid:id, socketip:ip});
+        var sendconnect = function(socketid, socketip, headers, queryParams) {
+            node.send({payload:"connect", socketid, socketip, headers});
         };
         ui.ev.on('newsocket', sendconnect);
 
-        var sendlost = function(id, ip) {
-            node.send({payload:"lost", socketid:id, socketip:ip});
+        var sendlost = function(socketid, socketip, headers, queryParams) {
+            node.send({payload:"lost", socketid, socketip, headers});
         };
         ui.ev.on('endsocket', sendlost);
     }

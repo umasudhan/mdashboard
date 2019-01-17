@@ -349,7 +349,8 @@ function init(server, app, log, redSettings) {
     log.info("mDashboard version " + dashboardVersion + " started at " + fullPath);
 
     io.on('connection', function(socket) {
-        ev.emit("newsocket", socket.client.id, socket.request.connection.remoteAddress);
+        ev.emit("newsocket", socket.client.id, socket.request.connection.remoteAddress, socket.handshake.headers, socket.handshake.query); //todo also send query parameters- socket.handshake.query (https://stackoverflow.com/a/39711590)
+        //todo and header uid- socket.handshake.headers (https://stackoverflow.com/questions/15503308/how-can-i-get-the-hostname-of-a-socket)
         updateUi(socket);
 
         socket.on(updateValueEventName, ev.emit.bind(ev, updateValueEventName));
@@ -373,7 +374,7 @@ function init(server, app, log, redSettings) {
             updateUi();
         });
         socket.on('disconnect', function() {
-            ev.emit("endsocket", socket.client.id, socket.request.connection.remoteAddress);
+            ev.emit("endsocket", socket.client.id, socket.request.connection.remoteAddress, socket.handshake.headers, socket.handshake.query); //todo also send query parameters- socket.handshake.query (https://stackoverflow.com/a/39711590)
         });
         socket.on('ui-audio', function(audioStatus) {
             ev.emit("audiostatus", audioStatus, socket.client.id, socket.request.connection.remoteAddress);
