@@ -77,10 +77,10 @@ module.exports = function(RED) {
             beforeSend: function (msg, original) {
                 if (original) {
                     const headers = socketIdVsHeaders.get(original.socketid);
-                    if(original.socketid){
+                    if (original.socketid) {
                         original.msg.socketid = original.socketid;
                     }
-                    if(headers){
+                    if (headers) {
                         original.msg.headers = headers;
                     }
                     return original.msg;
@@ -90,7 +90,7 @@ module.exports = function(RED) {
         node.on("close", done);
 
         var sendconnect = function(socketid, socketip, headers, queryParams) {
-            if(socketid && headers){
+            if (socketid && headers) {
                 socketIdVsHeaders.set(socketid, headers);
             }
             node.send({
@@ -105,7 +105,7 @@ module.exports = function(RED) {
         ui.ev.on('newsocket', sendconnect);
 
         var sendlost = function(socketid, socketip, headers, queryParams) {
-            if(socketid){
+            if (socketid) {
                 socketIdVsHeaders.delete(socketid);
             }
             node.send({
