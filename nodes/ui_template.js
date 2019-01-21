@@ -77,12 +77,14 @@ module.exports = function(RED) {
             beforeSend: function (msg, original) {
                 if (original) {
                     const headers = socketIdVsHeaders.get(original.socketid);
-                    if(headers){
-                        original.msg.session = {
-                            headers
-                        }
+                    if(original.socketid){
+                        original.msg.socketid = original.socketid;
                     }
-                    return original.msg; }
+                    if(headers){
+                        original.msg.headers = headers;
+                    }
+                    return original.msg;
+                }
             }
         });
         node.on("close", done);
@@ -93,11 +95,11 @@ module.exports = function(RED) {
             }
             node.send({
                 session:{
-                    state: "connect",
-                    socketid,
-                    socketip,
-                    headers
-                }
+                    state: "connect"
+                },
+                socketid,
+                socketip,
+                headers
             });
         };
         ui.ev.on('newsocket', sendconnect);
@@ -108,11 +110,11 @@ module.exports = function(RED) {
             }
             node.send({
                 session:{
-                    state: "disconnect",
-                    socketid,
-                    socketip,
-                    headers
-                }
+                    state: "disconnect"
+                },
+                socketid,
+                socketip,
+                headers
             });
         };
         ui.ev.on('endsocket', sendlost);
