@@ -2,6 +2,7 @@ module.exports = function(RED) {
     var ui = require('../ui')(RED);
 
     function TemplateNode(config) {
+        const socketIdVsHeaders = new Map();
         RED.nodes.createNode(this, config);
         var node = this;
 
@@ -74,19 +75,45 @@ module.exports = function(RED) {
                 return { msg:clonedMsg };
             },
             beforeSend: function (msg, original) {
-                if (original) { return original.msg; }
+                if (original) {
+                    const headers = socketIdVsHeaders.get(original.socketid);
+                    if(headers){
+                        original.msg.session = {
+                            headers
+                        }
+                    }
+                    return original.msg; }
             }
         });
         node.on("close", done);
 
-
         var sendconnect = function(socketid, socketip, headers, queryParams) {
-            node.send({payload:"connect", socketid, socketip, headers});
+            if(socketid && headers){
+                socketIdVsHeaders.set(socketid, headers);
+            }
+            node.send({
+                session:{
+                    state: "connect",
+                    socketid,
+                    socketip,
+                    headers
+                }
+            });
         };
         ui.ev.on('newsocket', sendconnect);
 
         var sendlost = function(socketid, socketip, headers, queryParams) {
-            node.send({payload:"lost", socketid, socketip, headers});
+            if(socketid){
+                socketIdVsHeaders.delete(socketid);
+            }
+            node.send({
+                session:{
+                    state: "disconnect",
+                    socketid,
+                    socketip,
+                    headers
+                }
+            });
         };
         ui.ev.on('endsocket', sendlost);
     }
