@@ -118,6 +118,12 @@ module.exports = function(RED) {
             });
         };
         ui.ev.on('endsocket', sendlost);
+
+        this.on('close', function() {
+            ui.ev.removeListener('newsocket', sendconnect);
+            ui.ev.removeListener('endsocket', sendlost);
+        })
+
     }
     RED.nodes.registerType("mui_template", TemplateNode);
     RED.library.register("uitemplates");
