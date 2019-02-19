@@ -23,6 +23,13 @@ if (typeof Object.assign != 'function') {
     })()
 }
 
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function(searchString, position) {
+        position = position || 0;
+        return this.indexOf(searchString, position) === position;
+    };
+}
+
 var app = angular.module('ui',['ngMaterial', 'ngMdIcons', 'ngSanitize', 'ngTouch', 'sprintf', 'chart.js', 'color.picker']);
 
 var locale = (navigator.languages && navigator.languages.length) ? navigator.languages[0] : navigator.language;
