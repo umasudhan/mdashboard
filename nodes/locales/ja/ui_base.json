@@ -24,7 +24,11 @@
             "tab" : "タブ",
             "link" : "リンク",
             "group" : "グループ",
-            "edit" : "編集"
+            "edit" : "編集",
+            "spacer": "スペーサ",
+            "layout" : "レイアウト",
+            "layout-editor" : "ダッシュボードレイアウトエディタ",
+            "width" : "幅"
         },
         "theme" : {
             "style" : "スタイル",

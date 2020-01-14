@@ -1,7 +1,13 @@
 <script type="text/javascript">
+    // convert to i18 text
+    //TODO- look at other similar c_ functions in ui_*.html - replace ui with mui
+    function c_(x) {
+        return RED._("node-red-dashboard/ui_template:ui_template."+x);
+    }
+
     RED.nodes.registerType('mui_template',{
         category: 'mdashboard',
-        color: 'rgb(166, 187, 207)',
+        color: 'rgb( 63, 173, 181)',
         defaults: {
             group: {type: 'mui_group', required:false},
             name: {value: ''},
@@ -28,7 +34,14 @@
         icon: "ui_template.png",
         paletteLabel: 'template',
         label: function() { return this.name || 'template'; },
+        labelStyle: function() { return this.name?"node_label_italic":""; },
         oneditprepare: function() {
+            if (RED.editor.hasOwnProperty("editText") && typeof RED.editor.editText === "function") {
+                $("#node-template-expand-editor").show();
+            }
+            else {
+                $("#node-template-expand-editor").hide();
+            }
             var that = this;
             $("#node-input-size").elementSizer({
                 width: "#node-input-width",
@@ -88,6 +101,24 @@
             });
 
             this.editor.focus();
+
+            RED.popover.tooltip($("#node-template-expand-editor"),c_("label.expand"));
+
+            $("#node-template-expand-editor").on("click", function(e) {
+                e.preventDefault();
+                var value = that.editor.getValue();
+                RED.editor.editText({
+                    mode: 'html',
+                    value: value,
+                    width: "Infinity",
+                    cursor: that.editor.getCursorPosition(),
+                    complete: function(v,cursor) {
+                        that.editor.setValue(v, -1);
+                        that.editor.gotoLine(cursor.row+1,cursor.column,false);
+                        setTimeout(function() { that.editor.focus(); },300);
+                    }
+                })
+            })
         },
         oneditsave: function() {
             var annot = this.editor.getSession().getAnnotations();
@@ -142,23 +173,32 @@
     </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-input-name">
+                <div style="display:inline-block; width:calc(100% - 105px)">
+            <input type="text" id="node-input-name">
+        </div>
+    </div>
+    <div class="form-row" style="margin-bottom:0px;">
+        <label for="node-input-format"><i class="fa fa-copy"></i> <span data-i18n="ui_template.label.template"></span></label>
+        <input type="hidden" id="node-input-format">
+        <button id="node-template-expand-editor" class="red-ui-button red-ui-button-small" style="float:right"><i class="fa fa-expand"></i></button>
+    </div>
+    <div class="form-row node-text-editor-row">
+        <div style="height:250px; min-height:100px" class="node-text-editor" id="node-input-format-editor" ></div>
     </div>
     <div id="template-pass-store">
-    <div class="form-row" style="margin-bottom:0px;">
-        <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-fwdInMessages" style="display:inline-block; width:auto; vertical-align:top;">
-        <label for="node-input-fwdInMessages" style="width:70%;"> Pass through messages from input.</label>
-    </div>
-    <div class="form-row" style="margin-bottom:0px;">
-        <label>&nbsp;</label>
-        <input type="checkbox" id="node-input-storeOutMessages" style="display:inline-block; width:auto; vertical-align:top;">
-        <label for="node-input-storeOutMessages" style="width:70%;"> Add output messages to stored state.</label>
-    </div>
+        <div class="form-row" style="margin-bottom:0px;">
+            <input type="checkbox" id="node-input-fwdInMessages" style="display:inline-block; margin-left:8px; width:auto; vertical-align:top;">
+            <label for="node-input-fwdInMessages" style="width:70%;"> <span data-i18n="ui_template.label.pass-through"></span></label>
+        </div>
+        <div class="form-row" style="margin-bottom:0px;">
+            <input type="checkbox" id="node-input-storeOutMessages" style="display:inline-block; margin-left:8px; width:auto; vertical-align:top;">
+            <label for="node-input-storeOutMessages" style="width:70%;"> <span data-i18n="ui_template.label.store-state"></span></label>
+        </div>
     </div>
     <div class="form-row" style="margin-bottom:0px;">
         <label for="node-input-format"><i class="fa fa-copy"></i> Template</label>
         <input type="hidden" id="node-input-format">
+        <button id="node-template-expand-editor" class="red-ui-button red-ui-button-small" style="float:right"><i class="fa fa-expand"></i></button>
     </div>
     <div class="form-row node-text-editor-row">
         <div style="height:250px; min-height:100px" class="node-text-editor" id="node-input-format-editor" ></div>
@@ -171,10 +211,10 @@
     based on the input message and can send back messages to Node-RED.</p>
     <p><b>For example:</b><br>
     <pre style="font-size:smaller;">&lt;div layout=&quot;row&quot; layout-align=&quot;space-between&quot;&gt;
-&lt;p&gt;The number is&lt;/p&gt;
-&lt;p ng-style=&quot;{color: (msg.payload || 0) % 2 === 0 ? 'green' : 'red'}&quot;&gt;
-  {{(msg.payload || 0) % 2 === 0 ? 'even' : 'odd'}}
-&lt;/p&gt;
+  &lt;p&gt;The number is&lt;/p&gt;
+  &lt;font color=&quot;{{((msg.payload || 0) % 2 === 0) ? 'green' : 'red'}}&quot;&gt;
+    {{(msg.payload || 0) % 2 === 0 ? 'even' : 'odd'}}
+  &lt;/font&gt;
 &lt;/div&gt;</pre>
     Will display if the number received as <code>msg.payload</code> is even or odd. It will also
     change the color of the text to green if the number is even or red if odd.<br/>
@@ -208,7 +248,8 @@ this.scope.action = function() { return value; }
     You can also define the template content via <code>msg.template</code>, so you can use external files for example.<br>
     Template will be reloaded on input if it has changed.<br>
     Code written in the Template field will be ignored when <code>msg.template</code> is present.</p>
-    <p>The following icon fonts are also available: <a href="https://design.google.com/icons/" target="_blank">Material Design icons</a>,
+    <p>The following icon fonts are also available: <a href="https://klarsys.github.io/angular-material-icons/" target="_blank">Material Design icons</a>,
     <a href="https://fontawesome.com/v4.7.0/icons/" target="_blank">Font Awesome icons</a>,
-    <a href="https://github.com/Paul-Reed/weather-icons-lite/blob/master/css/weather-icons-lite.css" target="_blank">Weather icons</a>.</p>
+    <a href="https://github.com/Paul-Reed/weather-icons-lite/blob/master/css_mappings.md" target="_blank">Weather icons</a>.
+    You can use the full set of google material icons if you add 'mi-' to the icon name. e.g. 'mi-videogame_asset' but this requires internet access.</p>
 </script>

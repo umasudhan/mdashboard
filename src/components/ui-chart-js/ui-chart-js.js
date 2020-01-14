@@ -11,7 +11,7 @@ angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
                     var type = scope.$eval('me.item.look');
                     var useOneColor = scope.$eval('me.item.useOneColor');
 
-                    scope.$watchGroup(['me.item.legend','me.item.interpolate','me.item.ymin','me.item.ymax','me.item.xformat','me.item.dot','me.item.cutout','me.item.nodata','me.item.animation','me.item.spanGaps'], function (newValue) {
+                    scope.$watchGroup(['me.item.legend','me.item.interpolate','me.item.ymin','me.item.ymax','me.item.xformat','me.item.dot','me.item.cutout','me.item.nodata','me.item.animation','me.item.spanGaps','me.item.options'], function (newValue) {
                         scope.config = loadConfiguration(type, scope);
                     });
 
@@ -129,7 +129,7 @@ angular.module('ui').directive('uiChartJs', [ '$timeout', '$interpolate',
                 }, 0);
                 $timeout(function() {
                     scope.$broadcast("$resize");
-                }, 100);
+                }, 50);
             }
         }
     }
@@ -142,7 +142,14 @@ function loadConfiguration(type,scope) {
     var interpolate = scope.$eval('me.item.interpolate');
     var xFormat = scope.$eval('me.item.xformat');
     var showDot = scope.$eval('me.item.dot');
-    var baseColours = scope.$eval('me.item.colors') || ['#1F77B4', '#AEC7E8', '#FF7F0E', '#2CA02C', '#98DF8A', '#D62728', '#FF9896', '#9467BD', '#C5B0D5'];
+    var bColours = scope.$eval('me.item.colors') || ['#1F77B4', '#AEC7E8', '#FF7F0E', '#2CA02C', '#98DF8A', '#D62728', '#FF9896', '#9467BD', '#C5B0D5'];
+    var baseColours = bColours.concat([
+        '#7EB3C6','#BB9A61','#3F8FB9','#57A13F',
+        '#BC5879','#6DC2DF','#D7D185','#91CA96',
+        '#DEB64D','#31615A','#B46E3F','#9B2FAA',
+        '#61A240','#AA3167','#9D6D5E','#3498DB',
+        '#EC7063','#DAF7A6','#FFC300','#D98880',
+        '#48C9B0','#7FB3D5','#F9E79F','#922B21']);
     var config = scope.config || {};
     var themeState = scope.$eval('me.item.theme.themeState');
     var useOneColor = scope.$eval('me.item.useOneColor');
@@ -188,7 +195,7 @@ function loadConfiguration(type,scope) {
             scaleLabel: {
                 fontColor: "#fff",
                 display: true
-            },
+            }
         }];
         if (xFormat !== "auto") {
             config.options.scales.xAxes[0].time = {
@@ -202,7 +209,7 @@ function loadConfiguration(type,scope) {
                     'week': xFormat,
                     'month': xFormat,
                     'quarter': xFormat,
-                    'year': xFormat,
+                    'year': xFormat
                 }
             };
         }
@@ -217,6 +224,7 @@ function loadConfiguration(type,scope) {
                     // Display and format the most recent time value as the title.
                     // This ensures the title reflects the xAxis time.
                     var largest = tooltip[0].xLabel;
+                    largest = new Date(largest).getTime();
                     if (isNaN(largest) || (largest < 1000000)) { return largest; }
                     for (var i=1; i<tooltip.length; i++) {
                         if (tooltip[i].xLabel > largest) {
@@ -343,20 +351,31 @@ function loadConfiguration(type,scope) {
 
     // Configure legend
     //if (type !== 'bar' && type !== 'horizontalBar' && JSON.parse(legend)) {
-    if (JSON.parse(legend)) {
+    if (legend == "true") {
+        config.overrides = [];
         config.options.legend = {
             display:true,
             position:'top',
-            labels: { boxWidth:10, fontSize:12, padding:8 }
+            labels: { boxWidth:10, fontSize:12, padding:8 },
+            onClick: function(e, legendItem) {
+                var index = legendItem.datasetIndex;
+                var ci = this.chart;
+                var meta = ci.getDatasetMeta(index);
+                meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                config.overrides[index] = {hidden:meta.hidden};
+                ci.update();
+            }
         };
         if ((type === "pie") || (type === "polar-area") || (type === "radar")) {
             config.options.legend.position = 'left';
         }
-
         //set colours based on widget text colour
         if (themeState) {
             config.options.legend.labels.fontColor = themeState['m-widget-textColor'].value;
         }
     }
+
+    // Allow override of any options if really required.
+    config.options = Object.assign({},config.options,scope.$eval('me.item.options'));
     return config;
 }

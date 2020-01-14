@@ -14,6 +14,7 @@
             showHue: {value: false},
             showAlpha: {value: false},
             showLightness: {value: true},
+            square: {value: "false"},
             dynOutput: {value: "false"},
             order: {value: 0},
             width: {value: 0, validate: function(v) {
@@ -31,16 +32,22 @@
         },
         inputs:1,
         outputs:1,
+        outputLabels: function() { return this.format; },
         icon: "ui_colour_picker.png",
         paletteLabel: 'colour picker',
         label: function() { return this.name || (~this.label.indexOf("{{") ? null : this.label) || 'colour picker'; },
+        labelStyle: function() { return this.name?"node_label_italic":""; },
         oneditprepare: function() {
+            if (this.square === undefined) {
+                this.square = "false";
+                $("#node-input-square").val("false");
+            }
             $("#node-input-size").elementSizer({
                 width: "#node-input-width",
                 height: "#node-input-height",
                 group: "#node-input-group"
             });
-            $("#node-input-format").change(function() {
+            $("#node-input-format").on("change", function() {
                 if ($(this).val() === "hex") {
                     $("#node-alpha-control").hide();
                 }
@@ -82,6 +89,10 @@
             <option value="hsv">hsv</option>
             <option value="rgb">rgb</option>
         </select>
+        <select id="node-input-square" style="width:130px; margin-left:30px">
+            <option value="false">round</option>
+            <option value="true">square</option>
+        </select>
     </div>
     <div class="form-row">
         <label>&nbsp;</label> Show hue slider : <input type="checkbox" id="node-input-showHue" style="display:inline-block; width:auto; vertical-align:baseline;">
@@ -102,7 +113,7 @@
         Always show value field : <input type="checkbox" checked id="node-input-showValue" style="display:inline-block; width:auto; vertical-align:top;">
     </div>
     <div class="form-row">
-        <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, pass through to output : </label>
+        <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, pass through to output: </label>
         <input type="checkbox" checked id="node-input-passthru" style="display:inline-block; width:auto; vertical-align:top;">
     </div>
     <div class="form-row">
@@ -135,5 +146,6 @@
     <p><b>Format</b> can be rgb, hex, hex8, hsv, or hsl. Transparency is supported for all except hex.</p>
     <p>If a <b>Topic</b> is specified, it will be added as <code>msg.topic</code>.</p>
     <p>Setting <code>msg.enabled</code> to <code>false</code> will disable the input.</p>
-    <p>This node will take an input of any colour format available as <b>Format</b>, and convert it accordingly.</p>
+    <p>If set to ‘pass through mode’ a message arriving on the input will be evaluated for any colour format available
+        as Format. If the conversion fails #000000 will be used.</p>
 </script>

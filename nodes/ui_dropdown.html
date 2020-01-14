@@ -20,7 +20,7 @@
             },
             height: {value: 0},
             passthru: {value: true},
-            options: {value:[{value: '', label : ''}], validate:function(value) { return value.length > 0; }},
+            options: {value:[{value: '', label : ''}]},
             payload: {value: ''},
             topic: {value: ''}
         },
@@ -29,6 +29,7 @@
         icon: "ui_dropdown.png",
         paletteLabel: 'dropdown',
         label: function() { return this.name || (~this.label.indexOf("{{") ? null : this.label) || 'dropdown'; },
+        labelStyle: function() { return this.name?"node_label_italic":""; },
         oneditprepare: function() {
             $("#node-input-size").elementSizer({
                 width: "#node-input-width",

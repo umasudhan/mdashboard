@@ -27,9 +27,11 @@
         },
         inputs:1,
         outputs:1,
+        outputLabels: function() { return this.min+" - "+this.max; },
         icon: "ui_slider.png",
         paletteLabel: 'slider',
         label: function() { return this.name || (~this.label.indexOf("{{") ? null : this.label) || 'slider'; },
+        labelStyle: function() { return this.name?"node_label_italic":""; },
         oneditprepare: function() {
             $("#node-input-size").elementSizer({
                 width: "#node-input-width",
@@ -77,7 +79,7 @@
         </select>
     </div>
     <div class="form-row">
-        <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, pass through to output: </label>
+        <label style="width:auto" for="node-input-passthru"><i class="fa fa-arrow-right"></i> If <code>msg</code> arrives on input, set slider to new payload value: </label>
         <input type="checkbox" checked id="node-input-passthru" style="display:inline-block; width:auto; vertical-align:top;">
     </div>
     <div class="form-row">
@@ -101,6 +103,8 @@
     <p>Adds a slider widget to the user interface.</p>
 	<p>The user can change its value between the limits (<b>min</b> and <b>max</b>). Each value change
     will generate a message with the value set as <b>payload</b>.</p>
+    <p>A vertical slider can be created by setting the size so that the height is greater than the width.</p>
+    <p>The slider can be reversed by setting the min value larger than the max value. e.g. min 100, max 0.</p>
     <p>If a <b>Topic</b> is specified, it will be added as <code>msg.topic</code>.</p>
     <p>Input messages will be converted to a number. The <b>min</b> value will be used if conversion fails,
     and it will update the user interface. If the value changes, it will also be passed to the output.</p>

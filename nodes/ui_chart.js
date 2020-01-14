@@ -41,7 +41,8 @@ module.exports = function(RED) {
                 colors: config.colors,
                 useOneColor: config.useOneColor || false,
                 animation: false,
-                spanGaps: false
+                spanGaps: false,
+                options: {},
             },
             convertBack: function(data) {
                 if (node.newStyle) {

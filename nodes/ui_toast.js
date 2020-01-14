@@ -10,11 +10,12 @@ module.exports = function(RED) {
         else { this.displayTime = 3000; }
         if (this.displayTime <= 0) { this.displayTime = 1; }
         this.position = config.position || "top right";
-        this.multi = config.multi || false;
         this.highlight = config.highlight;
         this.ok = config.ok;
         this.cancel = config.cancel;
         this.topic = config.topic;
+        if (config.sendall === undefined) { this.sendall = false; }
+        else { this.sendall = config.sendall; }
         var node = this;
 
         var noscript = function (content) {
@@ -39,9 +40,7 @@ module.exports = function(RED) {
         });
 
         node.on('input', function(msg) {
-            if (node.position !== "dialog" && node.multi!==true) {
-                delete msg.socketid;
-            }
+            if (node.position !== "dialog" && node.sendall === true) { delete msg.socketid; }
             msg.payload = noscript(msg.payload);
             ui.emitSocket('show-toast', {
                 title: node.topic || msg.topic,

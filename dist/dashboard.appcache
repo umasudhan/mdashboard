@@ -7,16 +7,21 @@ icon192x192.png
 icon64x64.png
 css/app.min.css
 css/app.min.less
-css/index.html
+css/gridstack-extra.min.css
+css/gridstack.min.css
 js/app.min.js
+js/gridstack.jQueryUI.min.js
+js/gridstack.min.js
+js/gridstack.min.map
+js/lodash.min.js
 js/tinycolor-min.js
 socket.io/socket.io.js
-font-awesome/fonts/fontawesome-webfont.woff
-font-awesome/fonts/fontawesome-webfont.woff2
-weather-icons-lite/fonts/weather-icons-lite.woff
-weather-icons-lite/fonts/weather-icons-lite.woff2
+fonts/fontawesome-webfont.woff
+fonts/fontawesome-webfont.woff2
+fonts/weather-icons-lite.woff
+fonts/weather-icons-lite.woff2
 
 NETWORK:
 *
 
-# hash: 0bc7a529a01bdc9215227f92d0c04798c1e20be6731dc5205f7295548864d6b5
+# hash: 13d12ad0b604306df295d9bc8809a5f6e4b9c46b999a7cd4cd7b2c45f9a95cae

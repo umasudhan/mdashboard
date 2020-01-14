@@ -28,6 +28,7 @@ module.exports = function(RED) {
                 showHue: config.showHue,
                 showAlpha: config.showAlpha,
                 showLightness: config.showLightness,
+                square: (config.square == 'true') || false,
                 dynOutput: config.dynOutput,
                 allowEmpty: true,
                 order: config.order,
@@ -35,7 +36,7 @@ module.exports = function(RED) {
                 width: config.width || group.config.width || 6,
                 height: config.height || 1
             },
-            beforeSend: function (msg) {
+            beforeSend: function (msg, orig) {
                 if (node.outformat === 'object') {
                     var pay = tc(msg.payload);
                     if (node.format === 'rgb') { msg.payload = pay.toRgb(); }

@@ -39,16 +39,23 @@
             cutout: {value: 0},
             useOneColor: {value: false},
             colors: {value: ['#1F77B4', '#AEC7E8', '#FF7F0E', '#2CA02C', '#98DF8A', '#D62728', '#FF9896', '#9467BD', '#C5B0D5']},
-            useOldStyle: {value: false}
+            useOldStyle: {value: false},
+            outputs: {value: 1}
         },
         inputs:1,
-        outputs:2,
-        outputLabels: ["chart state","(deprecated)"],
+        outputs:1,
+        inputLabels: function() { return this.chartType; },
+        outputLabels: ["chart state"],
         align: "right",
         icon: "ui_chart.png",
         paletteLabel: 'chart',
         label: function() { return this.name || (~this.label.indexOf("{{") ? null : this.label) || 'chart'; },
+        labelStyle: function() { return this.name?"node_label_italic":""; },
         oneditprepare: function() {
+            var oldouts = this.outputs;
+            if (RED.nodes.filterLinks({source:{id:this.id},sourcePort:1}).length > 0) { this.outputs = 2; }
+            else { this.outputs = 1; }
+            if (this.outputs !== oldouts) { this.changed = true; }
             if (!$("#node-input-chartType").val()) {
                 $("#node-input-chartType").val("line");
             }
@@ -60,7 +67,7 @@
                 height: "#node-input-height",
                 group: "#node-input-group"
             });
-            $("#node-input-chartType").change(function() {
+            $("#node-input-chartType").on("change", function() {
                 $("#legend-show").hide();
                 if ($(this).val() === "horizontalBar") {
                     $("#y-label-show").hide();
@@ -112,7 +119,7 @@
                 var textColor = (level >= 128) ? '#111111' : '#eeeeee';
                 $(id).css("color", textColor);
             }
-            $(".series-color").change(function() {
+            $(".series-color").on("change", function() {
                 setColour("#"+$(this).attr("id"), $(this).val());
             });
             var oval = $("#node-input-xformat").val();
@@ -157,7 +164,6 @@
             this.colors = [$("#node-input-color1").val(),$("#node-input-color2").val(),$("#node-input-color3").val(),
             $("#node-input-color4").val(),$("#node-input-color5").val(),$("#node-input-color6").val(),
             $("#node-input-color7").val(),$("#node-input-color8").val(),$("#node-input-color9").val()];
-
         }
     });
 </script>
@@ -235,23 +241,23 @@
             <input type="text" id="node-input-cutout" style="width:35px"> %
         </span>
     </div>
-    <div id="show-useOneColor" style="display:none;">
+    <div id="show-useOneColor" style="display:none; height:24px;">
         <input type="checkbox" id="node-input-useOneColor" style="display:inline-block; width:auto; vertical-align:baseline; margin-left:105px; margin-right:5px;">Use first colour for all bars
     </div>
     <div class="form-row" id="ui-chart-colours">
         <label for="node-input-color1">Series Colours</label>
-        <input type="color" id="node-input-color1" class="series-color"/>
-        <input type="color" id="node-input-color2" class="series-color"/>
-        <input type="color" id="node-input-color3" class="series-color"/>
+        <input type="color" id="node-input-color1" class="series-color" style="width:100px;"/>
+        <input type="color" id="node-input-color2" class="series-color" style="width:100px;"/>
+        <input type="color" id="node-input-color3" class="series-color" style="width:100px;"/>
         <div style="margin-top:5px; margin-left:104px;">
-            <input type="color" id="node-input-color4" class="series-color"/>
-            <input type="color" id="node-input-color5" class="series-color"/>
-            <input type="color" id="node-input-color6" class="series-color"/>
+            <input type="color" id="node-input-color4" class="series-color" style="width:100px;"/>
+            <input type="color" id="node-input-color5" class="series-color" style="width:100px;"/>
+            <input type="color" id="node-input-color6" class="series-color" style="width:100px;"/>
         </div>
         <div style="margin-top:5px; margin-left:104px;">
-            <input type="color" id="node-input-color7" class="series-color"/>
-            <input type="color" id="node-input-color8" class="series-color"/>
-            <input type="color" id="node-input-color9" class="series-color"/>
+            <input type="color" id="node-input-color7" class="series-color" style="width:100px;"/>
+            <input type="color" id="node-input-color8" class="series-color" style="width:100px;"/>
+            <input type="color" id="node-input-color9" class="series-color" style="width:100px;"/>
         </div>
     </div>
     <div class="form-row">
@@ -285,7 +291,5 @@
     <p>The label can also be set by a message property by setting
     the field to the name of the property, for example <code>{{msg.topic}}</code>.</p>
     <p>The node output contains an array of the chart state that can be persisted if needed. This can be passed
-    into the chart node to re-display the persisted data.
-    The node second output should no longer be used and will be removed in a future release. Use the
-    <code>ui_control</code> node to trigger a restore if needed.</p>
+    into the chart node to re-display the persisted data.</p>
 </script>
