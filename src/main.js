@@ -31,9 +31,6 @@ if (!String.prototype.startsWith) {
     };
 }
 
-// Start to do async load of google webfont
-WebFont.load({ google: { families: ['Material Icons'] } });
-
 var doVisualUpdates = true;
 document.addEventListener('visibilitychange', function() {
     setTimeout(function() { doVisualUpdates = !document.hidden; }, 1000);
@@ -467,9 +464,9 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
             var arrNames = strArray && Array.isArray(strArray) ? strArray : [strArray];
             // convert all names to lower-case, and replace any spaces with '_'
             arrNames = arrNames.map(function (n) {
-                return n.toLowerCase().replace(/\s+/, '_');
+                return n.toLowerCase().replace(/\s+/g, '_');
             });
-            return arrNames.includes(strName.toLowerCase().replace(/\s+/, '_'));
+            return arrNames.includes(strName.toLowerCase().replace(/\s+/g, '_'));
         }
 
         events.on(function (msg) {
@@ -517,9 +514,25 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
         });
 
         events.on('show-toast', function (msg) {
+            if (msg.raw !== true) {
+                var temp = document.createElement('div');
+                temp.textContent = msg.message;
+                msg.message = temp.innerHTML;
+            }
             if (msg.dialog === true) {
                 var confirm;
-                if (msg.cancel) {
+                if (msg.message == "") { $mdDialog.cancel(); return; }
+                if (msg.cancel && msg.prompt) {
+                    confirm = $mdDialog.prompt()
+                        .title(msg.title)
+                        .htmlContent(msg.message)
+                        .initialValue("")
+                        .ariaLabel(msg.ok + " or " + msg.cancel)
+                        .ok(msg.ok)
+                        .cancel(msg.cancel);
+                    confirm._options.focusOnOpen = false;
+                }
+                else if (msg.cancel) {
                     confirm = $mdDialog.confirm()
                         .title(msg.title)
                         .htmlContent(msg.message)
@@ -535,7 +548,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                         .ariaLabel(msg.ok)
                         .ok(msg.ok)
                 }
-                confirm._options.template = '<md-dialog md-theme="{{ dialog.theme || dialog.defaultTheme }}" aria-label="{{ dialog.ariaLabel }}" ng-class="dialog.css">' +
+                confirm._options.template = '<md-dialog md-theme="{{ dialog.theme || dialog.defaultTheme }}" aria-label="{{ dialog.ariaLabel }}" >' +
                     '<md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">' +
                         '<h2 class="md-title">{{ dialog.title }}</h2>' +
                         '<div ng-if="::dialog.mdHtmlContent" class="md-dialog-content-body"ng-bind-html="::dialog.mdHtmlContent | trusted"></div>' +
@@ -549,8 +562,12 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                     '</md-dialog-actions>' +
                 '</md-dialog>';
                 $mdDialog.show(confirm, { panelClass:'nr-dashboard-dialog' }).then(
-                    function() {
+                    function(res) {
+                        console.log("RES",typeof res,res,"::",msg.ok,"::");
                         msg.msg.payload = msg.ok;
+                        if (res != true) { msg.msg.payload = res; }
+                        if (res == undefined) { msg.msg.payload = ""; }
+                        console.log("MSG",msg);
                         events.emit({ id:msg.id, value:msg });
                     },
                     function() {
@@ -563,6 +580,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                 if (msg.hasOwnProperty("message") || msg.hasOwnProperty("title")) {
                     var toastScope = $rootScope.$new();
                     toastScope.toast = msg;
+                    if (msg.hasOwnProperty("message") && msg.message == "") { msg.displayTime = 1; }
                     var opts = {
                         scope: toastScope,
                         templateUrl: 'partials/toast.html',
@@ -577,7 +595,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
         events.on('ui-control', function(msg) {
             if (msg.hasOwnProperty("socketid") && (msg.socketid !== events.id) ) { return; }
             if (msg.hasOwnProperty("control")) { // if it's a request to modify a control
-                found = findControl(msg.id, main.menu);
+                var found = findControl(msg.id, main.menu);
                 for (var property in msg.control) {
                     if (msg.control.hasOwnProperty(property) && found.hasOwnProperty(property)) {
                         found[property] = msg.control[property];
@@ -711,7 +729,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                 if (voices.length > 0) {
                     var words = new SpeechSynthesisUtterance(msg.tts);
                     words.onerror = function(err) { events.emit('ui-audio', 'error: '+err.error); }
-                    words.onend = function(event) { events.emit('ui-audio', 'complete'); }
+                    words.onend = function() { events.emit('ui-audio', 'complete'); }
                     for (var v=0; v<voices.length; v++) {
                         if (voices[v].lang === msg.voice) {
                             words.voice = voices[v];
@@ -747,7 +765,7 @@ app.controller('MainController', ['$mdSidenav', '$window', 'UiEvents', '$locatio
                             audioSource.start(0);
                             events.emit('ui-audio', 'playing');
                         },
-                        function(err) { events.emit('ui-audio', 'error'); }
+                        function() { events.emit('ui-audio', 'error'); }
                     )
                 }
                 catch(e) { events.emit('ui-audio', 'error'); }

@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 /* global angular */
 /* global d3 */
 
@@ -16,6 +17,7 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
 
             if (typeof me.item.label === "string") {
                 me.item.getLabel = $interpolate(me.item.label).bind(null, me.item);
+                me.item.safeLabel = "nr-dashboard-widget-" + (me.item.label).replace(/\W/g,'_');
             }
 
             if (typeof me.item.tooltip === "string") {
@@ -66,7 +68,10 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                             me.item.value = parseFloat(me.item.value);
                             if (isNaN(me.item.value)) { me.item.value = me.item.min; }
                             if (delta > 0) {
-                                if (me.item.value < me.item.max) {
+                                if ((me.item.value == me.item.max) && (me.item.wrap == true)) {
+                                    me.item.value = me.item.min;
+                                }
+                                else if (me.item.value < me.item.max) {
                                     me.item.value = Math.round(Math.min(me.item.value + delta, me.item.max)*10000)/10000;
                                 }
                                 if (me.item.value < me.item.min) {
@@ -74,7 +79,10 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                                 }
                             }
                             else if (delta < 0) {
-                                if (me.item.value > me.item.min) {
+                                if ((me.item.value == me.item.min) && (me.item.wrap == true)) {
+                                    me.item.value = me.item.max;
+                                }
+                                else if (me.item.value > me.item.min) {
                                     me.item.value = Math.round(Math.max(me.item.value + delta, me.item.min)*10000)/10000;
                                 }
                                 if (me.item.value > me.item.max) {
@@ -239,6 +247,19 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                     }
 
                     case 'form': {
+                        me.processInput = function(msg) {
+                            if (typeof(msg.value) != 'object') { return }
+                            for ( var key in msg.value ) {
+                                if (!me.item.formValue.hasOwnProperty(key)) { continue; }
+                                me.item.formValue[key] = msg.value[key]
+                            }
+                        }
+                        me.item.extraRows = 0;
+                        me.item.options.map(function(item) {
+                            if (item.type == 'multiline' && item.rows > 1) {
+                                me.item.extraRows += item.rows - 1;
+                            }
+                        })
                         me.stop = function(event) {
                             if ((event.charCode === 13) || (event.which === 13)) {
                                 event.preventDefault();
@@ -262,6 +283,7 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                             $scope.$$childTail.form.$setUntouched();
                             $scope.$$childTail.form.$setPristine();
                         };
+                        me.item.me = me;
                         break;
                     }
 
@@ -274,6 +296,14 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                         if (me.item.msg !== undefined && me.item.msg.template !== undefined) {
                             me.setFormat(me.item.msg.template);
                         }
+                        break;
+                    }
+
+                    case 'slider': {
+                        me.active = false;
+                        me.mdown = function() { me.active = true; };
+                        me.mleave = function() { me.active = false; };
+                        me.mchange = function() { events.emit({ id:me.item.id, value:me.item.value });}
                         break;
                     }
                 }
@@ -322,5 +352,4 @@ angular.module('ui').controller('uiComponentController', ['$scope', 'UiEvents', 
                 }
             };
         }
-
     }]);

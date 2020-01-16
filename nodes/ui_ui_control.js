@@ -3,6 +3,7 @@ module.exports = function(RED) {
 
     function UiControlNode(config) {
         RED.nodes.createNode(this, config);
+        this.events = config.events || "all";
         var node = this;
 
         this.on('input', function(msg) {
@@ -24,22 +25,39 @@ module.exports = function(RED) {
         var sendconnect = function(id, ip) {
             node.send({payload:"connect", socketid:id, socketip:ip});
         };
-        ui.ev.on('newsocket', sendconnect);
 
         var sendlost = function(id, ip) {
             node.send({payload:"lost", socketid:id, socketip:ip});
         };
-        ui.ev.on('endsocket', sendlost);
 
         var sendchange = function(index, name, id, ip, p) {
             node.send({payload:"change", tab:index, name:name, socketid:id, socketip:ip, params:p});
         }
-        ui.ev.on('changetab', sendchange);
+
+        if (node.events === "connect") {
+            ui.ev.on('newsocket', sendconnect);
+        }
+        else if (node.events === "change") {
+            ui.ev.on('changetab', sendchange);
+        }
+        else {
+            ui.ev.on('newsocket', sendconnect);
+            ui.ev.on('changetab', sendchange);
+            ui.ev.on('endsocket', sendlost);
+        }
 
         this.on('close', function() {
-            ui.ev.removeListener('newsocket', sendconnect);
-            ui.ev.removeListener('endsocket', sendlost);
-            ui.ev.removeListener('changetab', sendchange);
+            if (node.events === "connect") {
+                ui.ev.removeListener('newsocket', sendconnect);
+            }
+            else if (node.events === "change") {
+                ui.ev.removeListener('changetab', sendchange);
+            }
+            else {
+                ui.ev.removeListener('newsocket', sendconnect);
+                ui.ev.removeListener('changetab', sendchange);
+                ui.ev.removeListener('endsocket', sendlost);
+            }
         })
     }
     RED.nodes.registerType("mui_ui_control", UiControlNode);

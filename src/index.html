@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="vendor/angular-material/angular-material.min.css">
     <link rel="stylesheet" href="vendor/angular-material-icons/angular-material-icons.css">
     <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="vendor/material-design-icons-iconfont/dist/material-design-icons.css">
     <link rel="stylesheet" href="vendor/weather-icons-lite/css/weather-icons-lite.css">
     <link rel="stylesheet" href="vendor/angularjs-color-picker/dist/angularjs-color-picker.min.css">
     <link rel="stylesheet" href="components/ui-component/templates/button.css">
@@ -58,7 +59,8 @@
     <!-- endbuild -->
     <title></title>
 </head>
-<body ng-app="ui"
+<body id="nr-dashboard"
+    ng-app="ui"
     ng-controller="MainController as main"
     ng-cloak layout="column"
     style="background: {{main.backgroundColor}}"
@@ -93,13 +95,12 @@
 <script src="vendor/angular-chart.js/dist/angular-chart.min.js"></script>
 <!--gauge-->
 <script src="vendor/d3/d3.min.js"></script>
-<script src="vendor/justgage/raphael-2.1.4.min.js"></script>
+<script src="vendor/justgage/raphael.min.js"></script>
 <script src="vendor/justgage/justgage.js"></script>
 <script src="components/ui-gauge/liquidFillGauge.js"></script>
 <!--colour picker-->
 <script src="vendor/tinycolor2/dist/tinycolor-min.js"></script>
 <script src="vendor/angularjs-color-picker/dist/angularjs-color-picker.min.js"></script>
-<script src="vendor/webfontloader/webfontloader.js"></script>
 <script src="main.js"></script>
 <script src="services/events.js"></script>
 <script src="services/sizes.js"></script>

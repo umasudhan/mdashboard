@@ -15,6 +15,7 @@ module.exports = function(RED) {
             tab: tab,
             group: group,
             storeFrontEndInputAsState: false,
+            forwardInputMessages: false, //todo is this needed
             control: {
                 type: 'form',
                 label: config.label,
@@ -29,7 +30,7 @@ module.exports = function(RED) {
                 sy: ui.getSizes().sy
             },
             beforeSend: function (msg) {
-                msg.topic = config.topic;
+                msg.topic = config.topic || undefined;
             }
         });
         node.on("close", done);

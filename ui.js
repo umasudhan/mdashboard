@@ -60,13 +60,13 @@ var mani = {
     ]
 }
 
-function toNumber(keepDecimals, config, input) {
+function toNumber(keepDecimals, config, input, old, m, s) {
     if (input === undefined) { return; }
     if (typeof input !== "number") {
         var inputString = input.toString();
         input = keepDecimals ? parseFloat(inputString) : parseInt(inputString);
     }
-    if (config.step) { input = Math.round(Math.round(input/config.step)*config.step*10000)/10000; }
+    if (s) { input = Math.round(Math.round(input/s)*s*10000)/10000; }
     return isNaN(input) ? config.min : input;
 }
 
@@ -81,13 +81,7 @@ function emitSocket(event, data) {
     else if (data.hasOwnProperty("socketid") && (data.socketid !== undefined)) {
         io.to(data.socketid).emit(event, data);
     }
-/*  latest in dashboard:
-    if (data.hasOwnProperty("msg") && data.msg.hasOwnProperty("socketid") && (data.msg.socketid !== undefined)) {
-        io.to(data.msg.socketid).emit(event, data);
-    }
-    else if (data.hasOwnProperty("socketid") && (data.socketid !== undefined)) {
-        io.to(data.socketid).emit(event, data);
-    }
+/*
     else {
         io.emit(event, data);
     }
@@ -180,7 +174,7 @@ function add(opt) {
 
         // Call the convert function in the node to get the new value
         // as well as the full dataset.
-        var conversion = opt.convert(msg.payload, oldValue, msg);
+        var conversion = opt.convert(msg.payload, oldValue, msg, opt.control.step);
 
         // If the update flag is set, emit the newPoint, and store the full dataset
         var fullDataset;
@@ -228,7 +222,7 @@ function add(opt) {
                             if (b.indexOf(".") !== -1) { b = b.split(".")[0]; }
                             if (b.indexOf("[") !== -1) { b = b.split("[")[0]; }
                             if (!toEmit.hasOwnProperty("msg")) { toEmit.msg = {}; }
-                            if (!toEmit.msg.hasOwnProperty(b) && msg.hasOwnProperty(b)) {
+                            if (!toEmit.msg.hasOwnProperty(b) && msg.hasOwnProperty(b) && (msg[b] !== undefined)) {
                                 if (Buffer.isBuffer(msg[b])) { toEmit.msg[b] = msg[b].toString("binary"); }
                                 else { toEmit.msg[b] = JSON.parse(JSON.stringify(msg[b])); }
                             }
@@ -258,7 +252,6 @@ function add(opt) {
             //if (settings.verbose) { console.log("UI-EMIT",JSON.stringify(toEmit)); }
             /*
                 Commented out for multi user dash- update only the particular socket
-                io.emit(updateValueEventName, toEmit);
                 replayMessages[opt.node.id] = toStore;
             */
             emitSocket(updateValueEventName, toEmit);
@@ -287,6 +280,7 @@ function add(opt) {
             var toSend = {payload:converted};
             toSend = opt.beforeSend(toSend, msg) || toSend;
             toSend.socketid = toSend.socketid || msg.socketid;
+            if (toSend.hasOwnProperty("topic") && (toSend.topic === undefined)) { delete toSend.topic; }
             if (!msg.hasOwnProperty("_fromInput")) {   // TODO: too specific
                 opt.node.send(toSend);      // send to following nodes
             }
@@ -311,8 +305,8 @@ function add(opt) {
 
 //from: https://stackoverflow.com/a/28592528/3016654
 function join() {
-    var trimRegex = new RegExp('^\\/|\\/$','g'),
-    paths = Array.prototype.slice.call(arguments);
+    var trimRegex = new RegExp('^\\/|\\/$','g');
+    var paths = Array.prototype.slice.call(arguments);
     return '/'+paths.map(function(e) {
         if (e) { return e.replace(trimRegex,""); }
     }).filter(function(e) {return e;}).join('/');
@@ -357,7 +351,7 @@ function init(server, app, log, redSettings) {
                 'angular', 'angular-sanitize', 'angular-animate', 'angular-aria', 'angular-material', 'angular-touch',
                 'angular-material-icons', 'svg-morpheus', 'font-awesome', 'weather-icons-lite',
                 'sprintf-js', 'jquery', 'jquery-ui', 'd3', 'raphael', 'justgage', 'angular-chart.js', 'chart.js',
-                'moment', 'angularjs-color-picker', 'tinycolor2', 'less', 'webfontloader'
+                'moment', 'angularjs-color-picker', 'tinycolor2', 'less'
             ];
             vendor_packages.forEach(function (packageName) {
                 app.use(join(settings.path, 'vendor', packageName), serveStatic(path.join(__dirname, 'node_modules', packageName)));

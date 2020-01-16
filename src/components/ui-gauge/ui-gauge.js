@@ -1,14 +1,13 @@
-/* global JustGage */
-/* global angular */
+/* global angular JustGage loadLiquidFillGauge liquidFillGaugeDefaultSettings */
 angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
-    function ($timeout, $interpolate) {
+    function ($timeout) {
         return {
             restrict: 'E',
             replace: true,
             templateUrl: 'components/ui-gauge/ui-gauge.html',
-            link: function(scope, element, attrs) {
+            link: function(scope) {
                 $timeout(function() {
-                    var gauge, bgnd, fgnd, unreg, unregtype;
+                    var gauge, bgnd, fgnd, tgnd, unreg, unregtype;
                     var theme = scope.$eval('main.selectedTab.theme.name') || "theme-light";
                     var themeState = scope.$eval('main.selectedTab.theme.themeState');
                     if (themeState) {
@@ -96,7 +95,7 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
                                     label: scope.$eval('me.item.units'),
                                     pointer: true,
                                     relativeGaugeSize: true,
-                                    textRenderer: function(v) {
+                                    textRenderer: function() {
                                         return scope.$eval('me.item.getText()') || "";
                                     }
                                 }
@@ -112,11 +111,11 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
 
                                 if (scope.$eval('me.item.gtype') === 'compass') {
                                     gaugeOptions.donut = true;
-                                    gaugeOptions.gaugeWidthScale = 0.2;
+                                    gaugeOptions.gaugeWidthScale = 0.3;
                                     gaugeOptions.pointer = true;
                                     gaugeOptions.refreshAnimationTime = 5;
                                     // gaugeOptions.pointerOptions = {toplength:12, bottomlength:12, bottomwidth:5, color:scope.$eval('me.item.gageoptions.compassColor')};
-                                    gaugeOptions.pointerOptions = {toplength:12, bottomlength:12, bottomwidth:5, color:undefined};
+                                    gaugeOptions.pointerOptions = {toplength:12, bottomlength:16, bottomwidth:8, color:undefined};
                                     gaugeOptions.gaugeColor = scope.$eval('me.item.gageoptions.compassColor[theme]');
                                     gaugeOptions.levelColors = [scope.$eval('me.item.gageoptions.compassColor[theme]')];
                                     if (gaugeOptions.gaugeColor === undefined) { gaugeOptions.gaugeColor = fgnd; }
@@ -127,12 +126,12 @@ angular.module('ui').directive('uiGauge', [ '$timeout', '$interpolate',
                                     var seg2 = scope.$eval('me.item.seg2');
                                     if ((!isNaN(parseFloat(seg1))) && (!isNaN(parseFloat(seg2)))) {
                                         var colors = scope.$eval('me.item.colors');
-                                        gaugeOptions.customSectors = [
+                                        gaugeOptions.customSectors = {percents:false, ranges:[
                                             { color : colors[0], lo : gaugeOptions.min, hi : seg1 },
                                             { color : colors[1], lo : seg1, hi : seg2 },
                                             { color : colors[2], lo : seg2, hi : gaugeOptions.max }
-                                        ]
-                                        gaugeOptions.levelColorsGradient = false;
+                                        ]}
+                                        gaugeOptions.noGradient = true;
                                     }
                                 }
                                 if (scope.$eval('me.item.options') !== null) {

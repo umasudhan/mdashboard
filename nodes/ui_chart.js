@@ -14,7 +14,7 @@ module.exports = function(RED) {
         if (config.width === "0") { delete config.width; }
         if (config.height === "0") { delete config.height; }
         // number of pixels wide the chart will be... 43 = sizes.sx - sizes.px
-        var pixelsWide = ((config.width || group.config.width || 6) - 1) * 43 - 15;
+        //var pixelsWide = ((config.width || group.config.width || 6) - 1) * 43 - 15;
         if (!tab || !group) { return; }
         var dnow = Date.now();
         var options = {
@@ -163,7 +163,6 @@ module.exports = function(RED) {
                             series = msg.series || "";
                         }
                     }
-                    var found = false;
                     if ((!oldValue) || (oldValue.length === 0)) {
                         oldValue = [{ key:node.id, values:{ series:[], data:[], labels:[] } }];
                     }
@@ -273,6 +272,7 @@ module.exports = function(RED) {
         }, 100);
 
         node.on("close", function() {
+            if (st) { clearTimeout(st); }
             ui.ev.removeListener('changetab', chgtab);
             done();
         })

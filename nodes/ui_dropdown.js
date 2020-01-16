@@ -14,15 +14,15 @@ module.exports = function(RED) {
         if (!tab) { return; }
 
         var control = {
-                type: 'dropdown',
-                label: config.label,
-                tooltip: config.tooltip,
-                place: config.place || "Select option",
-                order: config.order,
-                value: config.payload || node.id,
-                width: config.width || group.config.width || 6,
-                height: config.height || 1
-            };
+            type: 'dropdown',
+            label: config.label,
+            tooltip: config.tooltip,
+            place: config.place || "Select option",
+            order: config.order,
+            value: config.payload || node.id,
+            width: config.width || group.config.width || 6,
+            height: config.height || 1
+        };
 
         for (var o=0; o<config.options.length; o++) {
             config.options[o].label = config.options[o].label || config.options[o].value;
@@ -120,16 +120,20 @@ module.exports = function(RED) {
             },
 
             beforeSend: function (msg) {
+                var val = "";
                 if (msg._fromInput) {
                     delete msg.options;
                     msg.payload = emitOptions.value;
                 }
+                for (var i=0; i<control.options.length; i++) {
+                    if (control.options[i].value === msg.payload) { val = control.options[i].label; }
+                }
                 msg.topic = config.topic || msg.topic;
                 if (node.pt) {
-                    node.status({shape:"dot",fill:"grey",text:msg.payload});
+                    node.status({shape:"dot",fill:"grey",text:val});
                 }
                 else {
-                    node.state[1] = msg.payload;
+                    node.state[1] = val;
                     node.status({shape:"dot",fill:"grey",text:node.state[1] + " | " + node.state[1]});
                 }
             }

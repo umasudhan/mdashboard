@@ -13,27 +13,28 @@ In that sense, this dashboard is multi-user only for input- all dashboard users 
 
 Most of the documentation is left as is from the original project as it is applicable to the current project as well.
 
-This module provides a set of nodes in Node-RED to quickly create a live data
-dashboard.
+This module provides a set of nodes in Node-RED to quickly create a live data dashboard.
 
-From version 0.1.17 you can create and install widget nodes like other Node-RED nodes.
-See the <a href="https://github.com/node-red/node-red-dashboard/wiki/Creating-New-Dashboard-Widgets">Wiki</a>
-for more information.
+These nodes require node.js version 8. The last version to support node v6 was 2.9.5.
+
+From version 2.10.0 you can create and install widget nodes like other Node-RED nodes.
+See the [Wiki](https://github.com/node-red/node-red-dashboard/wiki/Creating-New-Dashboard-Widgets) for more information.
 
 For the latest updates see the [CHANGELOG.md](https://github.com/node-red/node-red-dashboard/blob/master/CHANGELOG.md)
 
-<img src="http://nodered.org/images/dashboarde.png"/>
+![Dashboard example](http://nodered.org/images/dashboarde.png)
 
 ## Pre-requisites
 
-Node-RED-Dashboard requires Node-RED version 0.14 or more recent.
+The Node-RED-Dashboard requires [Node-RED](https://nodered.org) to be installed.
 
 ## Install
 
 To install the stable version use the `Menu - Manage palette` option and search for `node-red-contrib-mdashboard`.
 
-Open your Node-RED instance and you should have UI nodes available in the palette and a new `mdashboard` tab in the
+Restart your Node-RED instance and you should have UI nodes available in the palette and a new `mdashboard` tab in the
 right side panel. The UI interface is available at <http://localhost:1880/mui> (if the default settings are used).
+
 
 ## Settings
 
@@ -104,9 +105,9 @@ to help pick up the theme colours.
  - --nr-dashboard-groupBackgroundColor
  - --nr-dashboard-groupTextColor
  - --nr-dashboard-groupBorderColor
- - --nr-dashboard-widgetBackgroundColor
+ - --nr-dashboard-widgetColor
  - --nr-dashboard-widgetTextColor
- - --nr-dashboard-widgetBorderColor
+ - --nr-dashboard-widgetBgndColor
 
 #### Widgets
 

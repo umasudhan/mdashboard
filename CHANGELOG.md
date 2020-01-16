@@ -1,9 +1,108 @@
-### 2.16.1-beta: Maintenance Release
+### 2.19.4-beta: Maintenance Release
+
+**Enhancements**
+
+ - add feedback option to dialog widget.
+
+### 2.19.3: Maintenance Release
+
+**Enhancements**
+
+ - Let dropdown status show selected label rather than value.
+
+**Fixes**
+
+ - Fix notification to send cancel instead of OK when dismissed by blank message.
+ - Fix Angular theme reverting to light in menu. Issue #554
+
+### 2.19.2: Maintenance Release
+
+**Fixes**
+
+ - Revert dropping of angular material icons with animation. Issue #552
+ 
+ ### 2.19.1: Maintenance Release
+
+**Enhancements**
+
+ - Self host Material Icons Font - PR #550
+
+**Fixes**
+
+ - Adjust Gauge title spacing.
+
+### 2.19.0: Milestone Release
+
+**Enhancements**
+
+ - Let ui_form node accept input to prefill, and add multiline text
+ - Let dialog be removed by blank message.
+
+**Fixes**
+
+ - Fix undocumented change to justgage custom sectors api. Issue #547
+
+### 2.18.0: Milestone Release
+
+**Enhancements**
+ 
+ - Update justgauge to latest (now maintained) version and drop monkeypatch. Issue #535.
+ - Add engines node8 to package.json
+
+**Fixes**
+
+ - Stop propagation of swipe when using color picker - Issue #539
+ - Handle tab names with multiple spaces in for hide/show - Issue #541
+ - Update gulpfile.js to gulp 4 - Issue #542
+ - Fix numeric step rounding when changed by ui_control
+
+### 2.17.1: Maintenance Release
+
+**Fixes**
+
+ - Add warning re missing order property in custom widget nodes
+ - Fix notifications. Issue #537.
+
+### 2.17.0: Milestone Release
+
+ **Fixes**
+
+  - Better vertical align larger button icons if supplied via label text
+  - Fix ui_notification node to not accept raw HTML by default, add option to allow.
+
+### 2.16.3: Maintenance Release
+
+ **Enhancements**
+
+  - If template has height -1 then set it to 0 height (test).
+  - Add wrap value feature to numeric node.
+
+  **Fixes**
+
+  - Ensure widgets handle undefined msg parts for labels etc.
+  - Fix scrollbar theming inside template.
+  - Ensure msg.topic really doesn't exist if not specified, for all ui nodes. Was PR #531
+  - Backlevel less package to fix IE11 loading, Issue #530
+
+### 2.16.2: Maintenance Release
+
+**Enhancements**
+
+ - Ui-control can be set to only report connect events, or change tab events.
+
+**Fixes**
+
+ - Stop slider sending twice (after fixing endstop issue below). Issue #527
+ - Fix Theme colour swatch size.
+
+### 2.16.1: Maintenance Release
 
 **Fixes**
 
  - Fix toast to show border correctly and better timing. Issue #525
  - Stop colour picker sending on page refresh. Issue #514
+ - Fix layout tool group locations. PR #526
+ - Fix slider not sending if past end of widget.
 
 ### 2.16.0: Milestone Release
 
@@ -11,7 +110,6 @@
 
  - Add Dashboard Layout tool - Major contribution - Thanks @KazuhiroItoh - PR #482
  - Add ui.isDark() returns true/false if overall theme is dark or light, so the widget could switch appropriately. (can already use getTheme() to get actual colors if needs be.)
-
 
  **Fixes**
 

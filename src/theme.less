@@ -23,8 +23,10 @@
     --nr-dashboard-groupBackgroundColor: @groupBackgroundColor;
     --nr-dashboard-groupBorderColor: @groupBorderColor;
     --nr-dashboard-widgetTextColor: @widgetTextColor;
-    --nr-dashboard-widgetBackgroundColor: @widgetBackgroundColor;
-    --nr-dashboard-widgetBorderColor: @widgetBorderColor;
+    --nr-dashboard-widgetBackgroundColor: @widgetBackgroundColor; // deprecated - will be removed at some point
+    --nr-dashboard-widgetBorderColor: @widgetBorderColor; // deprecated - will be removed at some point
+    --nr-dashboard-widgetColor: @widgetBackgroundColor;
+    --nr-dashboard-widgetBgndColor: @widgetBorderColor;
 }
 
 .nr-dashboard-disabled {
@@ -263,16 +265,25 @@ md-select-menu md-option:focus:not([disabled]):not([selected]) {
     margin: 8px;
 }
 .nr-dashboard-theme .nr-dashboard-gauge-title {
-    margin: 8px 0px 16px 0px;
+    margin: 6px 0px 20px 0px;
     z-index: 1;
 }
 .nr-dashboard-theme .nr-dashboard-gauge-titlel {
     font-size: larger;
     font-weight: 500 !important;
+    z-index: 1;
+}
+.nr-dashboard-theme .nr-dashboard-gauge-titlem {
+    font-weight: 500 !important;
+    margin: 2px 0px 14px 0px;
+    z-index: 1;
 }
 .nr-dashboard-theme .nr-dashboard-gauge-titles {
     font-size: x-small;
-    padding-bottom: 16px;
+    margin-top: 2px;
+    height: 10px;
+    padding-bottom: 14px;
+    z-index: 1;
 }
 
 /* Numeric */
@@ -517,12 +528,14 @@ md-select-menu md-option:focus:not([disabled]):not([selected]) {
         ::-webkit-scrollbar {
             height: 12px;
             width: 12px;
-            background: @widgetBackgroundColor;
         }
         ::-webkit-scrollbar-thumb {
-            background: @baseColor;
+            background-color: @baseColor;
             -webkit-border-radius: 1ex;
             -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+        }
+        ::-webkit-scrollbar-track {
+            background-color: @pageBackgroundColor;
         }
     }
 }
@@ -563,11 +576,16 @@ md-select-menu md-option:focus:not([disabled]):not([selected]) {
 .nr-dashboard-theme md-dialog {
     color: @widgetTextColor;
     background-color: @groupBackgroundColor;
-    border: 1px solid @groupBorderColor;
+    border: 3px solid @groupBorderColor;
 }
 .nr-dashboard-theme .md-dialog-content {
     padding: 24px;
 }
+.nr-dashboard-theme md-input-container.md-default-theme .md-input, md-input-container .md-input {
+    color: @widgetTextColor;
+    border-color: @pageTitlebarBackgroundColor !important;
+}
+
 
 
 /* Form */
@@ -647,5 +665,7 @@ md-select-menu md-option:focus:not([disabled]):not([selected]) {
 .nr-dashboard-theme md-content .nr-dashboard-form form .md-datepicker-expand-triangle{
     border-top-color: @widgetBackgroundColor ;
 }
-
+.nr-dashboard-theme md-content .nr-dashboard-form form md-input-container .md-input {
+    color: @widgetTextColor;
+}
 }

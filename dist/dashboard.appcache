@@ -1,4 +1,5 @@
 CACHE MANIFEST
+# Time: Thu Jan 16 2020 16:12:03 GMT+1100 (Australian Eastern Daylight Time)
 
 CACHE:
 i18n.js
@@ -18,10 +19,12 @@ js/tinycolor-min.js
 socket.io/socket.io.js
 fonts/fontawesome-webfont.woff
 fonts/fontawesome-webfont.woff2
+fonts/MaterialIcons-Regular.woff
+fonts/MaterialIcons-Regular.woff2
 fonts/weather-icons-lite.woff
 fonts/weather-icons-lite.woff2
 
 NETWORK:
 *
 
-# hash: 13d12ad0b604306df295d9bc8809a5f6e4b9c46b999a7cd4cd7b2c45f9a95cae
+# hash: 45c324ad96260fe89d7fa3d1a535da63a157209b95bb696b9ac5ec4a239bb0e2

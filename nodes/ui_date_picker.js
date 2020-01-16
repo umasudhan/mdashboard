@@ -15,6 +15,7 @@ module.exports = function(RED) {
             tab: tab,
             group: group,
             forwardInputMessages: config.passthru,
+            storeFrontEndInputAsState: false,
             control: {
                 type: 'date-picker',
                 label: config.label,

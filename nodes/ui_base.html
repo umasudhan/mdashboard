@@ -157,7 +157,7 @@
         border-radius: 3px;
         margin-left: 15px;
     }
-    input.nr-db-field-themeColor {
+    input.nr-db-field-themeColor[type="color"] {
         width: 60px !important;
         padding: 0px;
         height: 20px;
@@ -186,7 +186,7 @@
         background: none;
         border: none;
         margin-top: 3px;
-        display: none; /*changed to hide the launch dashboard link button*/
+        display: none; /*todo was inline-block changed to hide the launch dashboard link button*/
         margin: 3px 0px 0px 3px;
         height: 32px;
         line-height: 29px;
@@ -196,14 +196,11 @@
         position: relative;
         padding: 0px 7px 0px 7px;
     }
-    /*#dash-link-button:hover {
-        background-color: #eee;
-    }*/
     ul.red-ui-dashboard-theme-styles {
         list-style: none;
     }
     ul.red-ui-dashboard-theme-styles li {
-        margin-bottom: 10px;
+        margin-bottom: 6px;
     }
     .nr-db-resetIcon {
         margin: 3px 6px 0px 6px;
@@ -293,12 +290,12 @@
   margin-left: 2px;
 }
 .nr-dashboard-layout-span3 {
-  width: 24.5%;
+  width: 24.3%;
   padding: 2px;
   margin-left: 2px;
 }
 .nr-dashboard-layout-span2 {
-  width: 16.3%;
+  width: 16.0%;
   padding: 2px;
   margin-left: 2px;
 }
@@ -794,92 +791,92 @@
     //////////////////////////////////
     var moveGroupWidget = function(id) {
 
-        var toGridID = '#grid'+id;
-        var toGrid = $(toGridID+'.grid-stack').data('gridstack');
+    var toGridID = '#grid'+id;
+    var toGrid = $(toGridID+'.grid-stack').data('gridstack');
 
-        toGrid.container.droppable({
-            acccept: '.grid-stack-item',
-            tolerance: 'pointer',
-            drop: function( event, ui ) {
+    toGrid.container.droppable({
+        acccept: '.grid-stack-item',
+        tolerance: 'pointer',
+        drop: function( event, ui ) {
 
-                var fromGridID = '#' + ui.draggable[0].offsetParent.id;
+            var fromGridID = '#' + ui.draggable[0].offsetParent.id;
 
-                // Move the widget
-                if (fromGridID !== toGridID) {
+            // Move the widget
+            if (fromGridID !== toGridID) {
 
-                    var toGridOffset = $(toGridID).offset();
-                    var groupWidth = tabDatas.groups[id].width;
+                var toGridOffset = $(toGridID).offset();
+                var groupWidth = tabDatas.groups[id].width;
 
-                    // Reset group width before moving (Grid stack measures)
-                    toGrid.setGridWidth(groupWidth, true);
+                // Reset group width before moving (Grid stack measures)
+                toGrid.setGridWidth(groupWidth, true);
 
-                    // Current widget width factor for x position
-                    var curWidth = ($('#grid1').offset().left - $('#grid0').offset().left) * 0.9;
-                    var xfactor = curWidth / (groupWidth * 40);
-                    xfactor = xfactor > 1.0 ? 1.0 : xfactor;
-                    var x = Math.floor((ui.offset.left - toGridOffset.left)/(40 * xfactor));
-                    var y = Math.floor((ui.offset.top - toGridOffset.top)/47);
-                    var node = {
-                        type: ui.draggable[0].dataset.noderedtype,
-                        id: ui.draggable[0].dataset.noderedid,
-                        x: x,
-                        y: y,
-                        width: ui.draggable[0].dataset.gsWidth,
-                        height: ui.draggable[0].dataset.gsHeight,
-                        auto: (ui.draggable[0].dataset.noderedsizeauto == 'true') ? true : false
-                    };
+                // Current widget width factor for x position
+                var curWidth = ($('#grid1').offset().left - $('#grid0').offset().left) * 0.9;
+                var xfactor = curWidth / (groupWidth * 40);
+                xfactor = xfactor > 1.0 ? 1.0 : xfactor;
+                var x = Math.floor((ui.offset.left - toGridOffset.left)/(40 * xfactor));
+                var y = Math.floor((ui.offset.top - toGridOffset.top)/47);
+                var node = {
+                    type: ui.draggable[0].dataset.noderedtype,
+                    id: ui.draggable[0].dataset.noderedid,
+                    x: x,
+                    y: y,
+                    width: ui.draggable[0].dataset.gsWidth,
+                    height: ui.draggable[0].dataset.gsHeight,
+                    auto: (ui.draggable[0].dataset.noderedsizeauto == 'true') ? true : false
+                };
 
-                    var dispType = ui.draggable[0].dataset.nodereddisptype;
-                    var dispLabel = ui.draggable[0].dataset.nodereddisplabel;
+                var dispType = ui.draggable[0].dataset.nodereddisptype;
+                var dispLabel = ui.draggable[0].dataset.nodereddisplabel;
 
-                    var item = $('<div></div>', {
-                        'data-noderedtype': node.type,
-                        'data-noderedid': node.id,
-                        'data-nodereddisptype': dispType,
-                        'data-nodereddisplabel': dispLabel,
-                        'data-noderedsizeauto': node.auto
-                    });
+                var item = $('<div></div>', {
+                    'data-noderedtype': node.type,
+                    'data-noderedid': node.id,
+                    'data-nodereddisptype': dispType,
+                    'data-nodereddisplabel': dispLabel,
+                    'data-noderedsizeauto': node.auto
+                });
 
-                    if (node.auto === true) {
-                        node.x = 0;
-                        node.width = groupWidth;
-                        node.height = getDefaultHeight(node.id, groupWidth);
-                    }
-
-                    var itemContent = $('<div></div>', {
-                        addClass: 'grid-stack-item-content',
-                        title: dispLabel + ':' + dispType
-                    });
-
-                    if (node.auto === true) {
-                        itemContent.append('<i class="fa fa-unlock nr-dashboard-layout-resize-enable"></i>');
-                        itemContent.find('.nr-dashboard-layout-resize-enable').on('click',layoutResizeEnable);
-                    } else {
-                        itemContent.append('<i class="fa fa-lock nr-dashboard-layout-resize-disable"</i>');
-                        itemContent.find('.nr-dashboard-layout-resize-disable').on('click',layoutResizeDisable);
-                    }
-
-                    itemContent.append('<b>'+ dispLabel +'</b><br/>'+ dispType);
-                    itemContent.appendTo(item);
-                    var newWidget = toGrid.addWidget(
-                        item,
-                        node.x, node.y, node.width, node.height, false, null, null,
-                        ui.draggable[0].dataset.gsMinHeight,
-                        ui.draggable[0].dataset.gsMaxHeight,
-                        node.id);
-
-                    var fromWidget = ui.draggable[0];
-                    if (node.auto === true) {
-                        $(fromWidget).find('.nr-dashboard-layout-resize-enable').off('click');
-                    } else {
-                        $(fromWidget).find('.nr-dashboard-layout-resize-disable').off('click');
-                    }
-                    var fromGrid = $(fromGridID+'.grid-stack').data('gridstack');
-                    fromGrid.removeWidget(fromWidget);
-                    toGrid.resizable(newWidget, !node.auto);
+                if (node.auto === true) {
+                    node.x = 0;
+                    node.width = groupWidth;
+                    node.height = getDefaultHeight(node.id, groupWidth);
                 }
+
+                var itemContent = $('<div></div>', {
+                    addClass: 'grid-stack-item-content',
+                    title: dispLabel + ':' + dispType
+                });
+
+                if (node.auto === true) {
+                    itemContent.append('<i class="fa fa-unlock nr-dashboard-layout-resize-enable"></i>');
+                    itemContent.find('.nr-dashboard-layout-resize-enable').on('click',layoutResizeEnable);
+                } else {
+                    itemContent.append('<i class="fa fa-lock nr-dashboard-layout-resize-disable"</i>');
+                    itemContent.find('.nr-dashboard-layout-resize-disable').on('click',layoutResizeDisable);
+                }
+
+                itemContent.append('<b>'+ dispLabel +'</b><br/>'+ dispType);
+                itemContent.appendTo(item);
+                var newWidget = toGrid.addWidget(
+                    item,
+                    node.x, node.y, node.width, node.height, false, null, null,
+                    ui.draggable[0].dataset.gsMinHeight,
+                    ui.draggable[0].dataset.gsMaxHeight,
+                    node.id);
+
+                var fromWidget = ui.draggable[0];
+                if (node.auto === true) {
+                    $(fromWidget).find('.nr-dashboard-layout-resize-enable').off('click');
+                } else {
+                    $(fromWidget).find('.nr-dashboard-layout-resize-disable').off('click');
+                }
+                var fromGrid = $(fromGridID+'.grid-stack').data('gridstack');
+                fromGrid.removeWidget(fromWidget);
+                toGrid.resizable(newWidget, !node.auto);
             }
-        });
+        }
+    });
     }
 
     //////////////////////////////////////////
@@ -973,8 +970,6 @@
             return true;
         }
     }
-
-
 
 
     RED.nodes.registerType('mui_base',{
@@ -1253,11 +1248,11 @@
                     var re = new RegExp('\/{1,}','g');
                     lnk = lnk.replace(re,'/');
                     if (!RED.hasOwnProperty("actions")) {
-                        RED.keyboard.add("*",/* d */ 68,{ctrl:true, shift:true},function() { window.open(document.location.protocol+"//"+lnk) });
+                        RED.keyboard.add("*",/* d */ 68,{ctrl:true, shift:true},function() { window.open(document.location.protocol+"//"+lnk, "nr-dashboard") });//todo nr-dashboard argument not in original
                     }
                     else {
                         RED.keyboard.add("*","ctrl-shift-d","dashboard:show-dashboard");
-                        RED.actions.add("dashboard:show-dashboard",function() { window.open(document.location.protocol+"//"+lnk) });
+                        RED.actions.add("dashboard:show-dashboard",function() { window.open(document.location.protocol+"//"+lnk, "nr-dashboard") });
                     }
                     $('<span id="mdash-link-button" class="editor-button" style="position:absolute; right:0px;"><i class="fa fa-external-link"></i></span>')
                     .click(function(evt) {
@@ -1363,7 +1358,7 @@
                 .append($('<option>', { value:"false", text:c_("swipe.no-swipe"), selected:true }))
                 .append($('<option>', { value:"true", text:c_("swipe.allow-swipe") }))
                 .val("false")
-                    .on("change", function() {
+                .on("change", function() {
                     if (!globalDashboardNode || globalDashboardNode.site.allowSwipe !== $(this).val()) {
                         ensureDashboardNode(true);
                         globalDashboardNode.site.allowSwipe = $(this).val();
@@ -1420,8 +1415,8 @@
 
                 var divSetSizes = $('<div>',{class:"form-row"}).appendTo(siteTab);
                 $('<span style="width:45%; display:inline-block">').html('<b>'+c_("label.sizes")+'</b>').appendTo(divSetSizes);
-                $('<span style="width:25%; display:inline-block; font-size:smaller">').html(c_("label.horizontal")).appendTo(divSetSizes);
-                $('<span style="width:20%; display:inline-block; font-size:smaller">').html(c_("label.vertical")).appendTo(divSetSizes);
+                $('<span style="width:25%; display:inline-block; font-size:smaller">').text(c_("label.horizontal")).appendTo(divSetSizes);
+                $('<span style="width:20%; display:inline-block; font-size:smaller">').text(c_("label.vertical")).appendTo(divSetSizes);
                 $('<i id="msizes-reset" class="fa fa-undo nr-db-resetIcon"></i>')
                 .css({opacity:1.0})
                 .click(function(e) {
@@ -1641,7 +1636,7 @@
 
                 var customThemeLibraryContainer = $('<div id="mcustom-theme-library-container">').appendTo(themeTab);
                 $('<label class="nr-db-theme-label">').text(c_("theme.custom-profile")).appendTo(customThemeLibraryContainer);
-                $('<input type="text" id="mui-sidebar-name" placeholder="profile name (not blank)">')
+                $('<input type="text" id="mui-sidebar-name" style="vertical-align:top;" placeholder="profile name (not blank)">')
                 .val(c_("theme.custom-profile-name"))
                 .on("change", function() {
                     if (!globalDashboardNode || globalDashboardNode.theme.customTheme.name !== $(this).val()) {
@@ -1977,6 +1972,7 @@
                         evt.stopPropagation();
                         evt.preventDefault();
                     });
+
                     // Dashboard layout tool
                     //todo this may need changes
                     if (item.type === 'mui_tab') {
@@ -2120,7 +2116,7 @@
                                             // Set default value when there is auto width
                                             if (widgets[cnt2].auto == true) {
                                                 widgets[cnt2].width = groupWidth;
-                                                // Adjust to the group width
+                                            // Adjust to the group width
                                             } else if (widgets[cnt2].width > groupWidth) {
                                                 widgets[cnt2].width = groupWidth;
                                             }
@@ -2785,7 +2781,6 @@
                         $("#mnr-db-field-gx").val(globalDashboardNode.site.sizes.gx);
                         $("#mnr-db-field-gy").val(globalDashboardNode.site.sizes.gy);
 
-
                         if (typeof globalDashboardNode.theme.angularTheme !== "object") {
                             globalDashboardNode.theme.angularTheme = aTheme;
                         }
@@ -2793,11 +2788,10 @@
                         $("#mnr-db-field-angAccents").val(globalDashboardNode.theme.angularTheme.accents || "blue");
                         $("#mnr-db-field-angWarn").val(globalDashboardNode.theme.angularTheme.warn || "red");
                         $("#mnr-db-field-angBackground").val(globalDashboardNode.theme.angularTheme.background || "grey");
+                        $("#mnr-db-field-angLook").val(globalDashboardNode.theme.angularTheme.palette || "light");
 
                         $("#mnr-db-field-theme").val(globalDashboardNode.theme.name);
                         $("#mui-sidebar-name").val(globalDashboardNode.theme.customTheme.name);
-
-
                         if (globalDashboardNode.theme.name === 'theme-custom') {
                             $("#mcustom-theme-library-container").show();
                             $("#mcustom-theme-settings").show();
@@ -3401,7 +3395,7 @@
 })(jQuery);
 </script>
 
-<script type="text/x-red" data-template-name="mui_base">
+<script type="text/html" data-template-name="mui_base">
     <div class='form-row'>
         This <i>mui_base</i> node is the main node that all<br/>other multi dashboard widget nodes communicate to.<br/>
         <br/>One instance is required to support the dashboard.<br/>
@@ -3410,5 +3404,5 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="mui_base">
+<script type="text/html" data-help-name="mui_base">
 </script>
