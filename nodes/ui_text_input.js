@@ -1,44 +1,53 @@
-module.exports = function(RED) {
-    var ui = require('../ui')(RED);
+module.exports = function (RED) {
+  var ui = require("../ui")(RED);
 
-    function TextInputNode(config) {
-        RED.nodes.createNode(this, config);
-        var node = this;
+  function TextInputNode(config) {
+    RED.nodes.createNode(this, config);
+    var node = this;
 
-        var group = RED.nodes.getNode(config.group);
-        if (!group) { return; }
-        var tab = RED.nodes.getNode(group.config.tab);
-        if (!tab) { return; }
-
-        var done = ui.add({
-            node: node,
-            tab: tab,
-            group: group,
-            forwardInputMessages: config.passthru,
-            storeFrontEndInputAsState: false,
-            control: {
-                type: (config.delay <= 0 ? 'text-input-CR' : 'text-input'),
-                label: config.label,
-                tooltip: config.tooltip,
-                mode: config.mode,
-                delay: config.delay,
-                order: config.order,
-                value: '',
-                width: config.width || group.config.width || 6,
-                height: config.height || 1
-            },
-            beforeSend: function (msg) {
-                if (config.mode === "time") {
-                    if (typeof msg.payload === "string") {
-                        msg.payload = Date.parse(msg.payload);
-                    }
-                }
-                // if (config.mode === "week") { msg.payload = Date.parse(msg.payload); }
-                // if (config.mode === "month") { msg.payload = Date.parse(msg.payload); }
-                msg.topic = config.topic || msg.topic;
-            }
-        });
-        node.on("close", done);
+    var group = RED.nodes.getNode(config.group);
+    if (!group) {
+      return;
     }
-    RED.nodes.registerType("mui_text_input", TextInputNode);
+    var tab = RED.nodes.getNode(group.config.tab);
+    if (!tab) {
+      return;
+    }
+
+    var done = ui.add({
+      node: node,
+      tab: tab,
+      group: group,
+      // Teste Concert
+      emitOnlyNewValues: config.emitOnlyNewValues, //false,
+      // *****
+      forwardInputMessages: config.passthru,
+      // Teste Concert
+      storeFrontEndInputAsState: config.storeFrontEndInputAsState, //true,
+      // *****
+      control: {
+        type: config.delay <= 0 ? "text-input-CR" : "text-input",
+        label: config.label,
+        tooltip: config.tooltip,
+        mode: config.mode,
+        delay: config.delay,
+        order: config.order,
+        value: "",
+        width: config.width || group.config.width || 6,
+        height: config.height || 1,
+      },
+      beforeSend: function (msg) {
+        if (config.mode === "time") {
+          if (typeof msg.payload === "string") {
+            msg.payload = Date.parse(msg.payload);
+          }
+        }
+        // if (config.mode === "week") { msg.payload = Date.parse(msg.payload); }
+        // if (config.mode === "month") { msg.payload = Date.parse(msg.payload); }
+        msg.topic = config.topic || msg.topic;
+      },
+    });
+    node.on("close", done);
+  }
+  RED.nodes.registerType("mui_text_input", TextInputNode);
 };
