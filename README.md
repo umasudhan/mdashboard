@@ -1,5 +1,5 @@
 # node-red-contrib-mdashboard
-
+# Important: Please note that I can no longer spare time to work on this project. If you are interested in taking over, please mail me at umasudhanp[at]gmail and i will outline next steps.
 
 [![npm version](https://badge.fury.io/js/node-red-contrib-mdashboard.svg)](https://badge.fury.io/js/node-red-contrib-mdashboard)
 Note that this is not the official node-red-dashboard. This is a fork which solves a very specific requirement- widget
